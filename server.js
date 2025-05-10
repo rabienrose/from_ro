@@ -4,7 +4,7 @@ import path from 'path';
 import mysql from 'mysql2';
 
 const app = express();
-const port = 8001;
+const port = 8002;
 
 app.use(cors());
 

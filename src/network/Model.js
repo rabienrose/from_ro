@@ -181,7 +181,6 @@ RSM.prototype.compile = function Compile()
 	var node_count     = nodes.length;
 	var instance_count = instances.length;
 	var i, j, k;
-	console.log(node_count, instance_count);
 	var meshes = new Array(node_count * instance_count);
 	for (i = 0, k = 0; i < node_count; ++i) {
 		for ( j = 0; j < instance_count; ++j, k++) {

@@ -202,4 +202,53 @@ class BinaryReader {
 	}
 }
 
+BinaryReader.prototype.readChar =
+BinaryReader.prototype.readByte=
+BinaryReader.prototype.getInt8;
+
+BinaryReader.prototype.readUChar =
+BinaryReader.prototype.readUByte=
+BinaryReader.prototype.getUint8;
+
+BinaryReader.prototype.readShort=
+BinaryReader.prototype.getInt16;
+
+BinaryReader.prototype.readUShort=
+BinaryReader.prototype.getUint16;
+
+BinaryReader.prototype.readInt=
+BinaryReader.prototype.readLong=
+BinaryReader.prototype.getInt32;
+
+BinaryReader.prototype.readUInt=
+BinaryReader.prototype.getUint32;
+
+BinaryReader.prototype.readULong=
+BinaryReader.prototype.getUInt64=
+BinaryReader.prototype.getUint32;
+
+BinaryReader.prototype.readFloat=
+BinaryReader.prototype.getFloat32;
+
+BinaryReader.prototype.readDouble=
+BinaryReader.prototype.getFloat64;
+
+BinaryReader.prototype.getUInt64=
+BinaryReader.prototype.readUInt64;
+
+BinaryReader.prototype.readString=
+BinaryReader.prototype.getString;
+
+BinaryReader.prototype.readBinaryString=
+BinaryReader.prototype.getBinaryString;
+
+BinaryReader.prototype.readStruct=
+BinaryReader.prototype.getStruct;
+
+BinaryReader.prototype.readPos=
+BinaryReader.prototype.getPos;
+
+BinaryReader.prototype.readPos2=
+BinaryReader.prototype.getPos2;
+
 export default BinaryReader;

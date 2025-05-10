@@ -7,15 +7,28 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "lint": "eslint .",
     "serve": "node server.js"
   },
   "devDependencies": {
-    "vite": "^6.3.1"
-  },
-  "dependencies": {
+    "terser-webpack-plugin": "^5.3.14",
+    "vite": "^6.3.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "mysql2": "^3.14.1",
+    "@eslint/js": "^9.22.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "gl-matrix": "^3.4.3",
-    "mysql2": "^3.14.1"
+    "jquery": "^3.7.1"
   }
 }

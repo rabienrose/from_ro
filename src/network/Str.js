@@ -42,7 +42,7 @@ class STRLayer
 		this.texname = new Array(this.texcnt);
 
 		for (i = 0; i < this.texcnt; ++i) {
-			this.texname[i] = 'data\\texture\\effect\\' + texturePath + fp.getBinaryString(128);
+			this.texname[i] = 'resources/texture/effect/' + texturePath + fp.getBinaryString(128);
 		}
 
 		this.anikeynum  = fp.getInt32();

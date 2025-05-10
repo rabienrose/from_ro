@@ -26,7 +26,6 @@ class SPR{
 		if (this.header != 'SP') {
 			throw new Error('SPR::load()');
 		}
-		console.log(this.version);
 		this.indexed_count  = this.fp.getUint16();
 		this._indexed_count = this.indexed_count + 0;
 		if (this.version > 1.1) {
@@ -34,7 +33,6 @@ class SPR{
 		}
 		this.frames = new Array(this.indexed_count + this.rgba_count);
 		this.rgba_index = this.indexed_count;
-		console.log(this.indexed_count, this.rgba_count);
 
 		if (this.version < 2.1) {
 			this.readIndexedImage();
