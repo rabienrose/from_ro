@@ -2,6 +2,7 @@ import Network from './NetworkManager.js';
 import Session from '../utils/SessionStorage.js';
 import PACKET from './PacketStructure.js';
 import Sound from '../audio/SoundManager.js';
+import Entity from '../render/Entity/Entity.js';
 
 
 var Char={}
@@ -50,17 +51,16 @@ Char.onExitRequest = function()
 
 Char.onConnectionAccepted = function( pkt )
 {
-  console.log(pkt); 
   pkt.sex = Session.Sex;
-  console.log(Char);
   Char.onConnect(pkt);
-  Char.char_list=pkt.charInfo;
+  // Char.char_list=pkt.charInfo;
+  
 
 
   var ping = new PACKET.CZ.PING();
   ping.AID = Session.AID;
   Network.setPing(function(){
-    console.log("ping")
+    console.log("char ping")
     Network.sendPacket(ping);
   });
 
@@ -146,6 +146,8 @@ Char.onConnectRequest = function( slot_id )
 Char.onReceiveMapInfo = function( pkt )
 {
   Session.GID = pkt.GID;
+  Session.ServerChar={ip:pkt.addr.ip,port:pkt.addr.port,mapName:pkt.mapName}; 
+  Char.onInMap();
 }
 
 export default Char;

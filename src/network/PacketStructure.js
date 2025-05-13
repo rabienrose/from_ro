@@ -293,17 +293,83 @@ PACKET.CZ.ENTER = function PACKET_CZ_ENTER() {
 	this.Sex = 0;
 };
 PACKET.CZ.ENTER.prototype.build = function() {
-	var ver = this.getPacketVersion();
-	var pkt = new BinaryWriter(ver[2]);
-
-	pkt.writeShort(ver[1]);
-	pkt.view.setUint32(ver[3], this.AID, true);
-	pkt.view.setUint32(ver[4], this.GID, true);
-	pkt.view.setUint32(ver[5], this.AuthCode, true);
-	pkt.view.setUint32(ver[6], this.ClientTime, true);
-	pkt.view.setUint8(ver[7], this.Sex, true);
+	var pkt = new BinaryWriter(19);
+	pkt.writeShort(0x22d);
+	pkt.view.setUint32(2, this.AID, true);
+	pkt.view.setUint32(6, this.GID, true);
+	pkt.view.setUint32(10, this.AuthCode, true);
+	pkt.view.setUint32(14, this.ClientTime, true);
+	pkt.view.setUint8(18, this.Sex, true);
 
 	return pkt;
+};
+
+// 0x35f
+PACKET.CZ.REQUEST_TIME = function PACKET_CZ_REQUEST_TIME() {
+	this.clientTime = 0;
+};
+PACKET.CZ.REQUEST_TIME.prototype.build = function() {
+	var pkt = new BinaryWriter(6);
+	pkt.writeShort(0x35f);
+	pkt.view.setUint32(2, this.clientTime, true);
+	return pkt;
+};
+
+// 0x7f
+PACKET.ZC.NOTIFY_TIME = function PACKET_ZC_NOTIFY_TIME(fp, end) {
+	this.time = fp.readULong();
+};
+PACKET.ZC.NOTIFY_TIME.size = 6;
+
+// 0x283
+PACKET.ZC.AID = function PACKET_ZC_AID(fp, end) {
+	this.AID = fp.readULong();
+};
+PACKET.ZC.AID.size = 6;
+
+// 0x2eb
+PACKET.ZC.ACCEPT_ENTER2 = function PACKET_ZC_ACCEPT_ENTER2(fp, end) {
+	this.startTime = fp.readULong();
+	this.PosDir = fp.readPos();
+	this.xSize = fp.readUChar();
+	this.ySize = fp.readUChar();
+	this.font = fp.readShort();
+};
+PACKET.ZC.ACCEPT_ENTER2.size = 13;
+
+// 0x85
+PACKET.CZ.REQUEST_MOVE = function PACKET_CZ_REQUEST_MOVE() {
+	this.dest = [0, 0];
+};
+PACKET.CZ.REQUEST_MOVE.prototype.build = function() {
+	var pkt = new BinaryWriter(5);
+	pkt.writeShort(0x85);
+	pkt.view.setPos(2, this.dest, true);
+	return pkt;
+};
+
+// 0x87
+PACKET.ZC.NOTIFY_PLAYERMOVE = function PACKET_ZC_NOTIFY_PLAYERMOVE(fp, end) {
+	this.moveStartTime = fp.readULong();
+	this.MoveData = fp.readPos2();
+};
+PACKET.ZC.NOTIFY_PLAYERMOVE.size = 12;
+
+// 0xb0
+PACKET.ZC.PAR_CHANGE = function PACKET_ZC_PAR_CHANGE(fp, end) {
+	this.varID = fp.readUShort();
+	this.count = fp.readLong();
+};
+PACKET.ZC.PAR_CHANGE.size = 8;
+
+// 0x7d
+PACKET.CZ.NOTIFY_ACTORINIT = function PACKET_CZ_NOTIFY_ACTORINIT() {};
+PACKET.CZ.NOTIFY_ACTORINIT.prototype.build = function() {
+	var pkt_len = 2;
+	var pkt_buf = new BinaryWriter(pkt_len);
+
+	pkt_buf.writeShort(0x7d);
+	return pkt_buf;
 };
 
 export default PACKET;

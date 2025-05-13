@@ -98,6 +98,7 @@ MapLoader.load = function Load( mapname ){
 				files.push(models[i].filename);
 			}
 		}
+		
 		var promises = files.map(filename => {
 			return FileManager.load(filename, {keep_name:true});
 		});
@@ -202,7 +203,10 @@ MapLoader.mergeMeshes = function MergeMeshes( objects, bufferSize )
 		offset += size;
 	}
 	var promises = textures.map(filename => {
-		var promise = FileManager.load(filename, {keep_name:true});
+		var promise = FileManager.load(filename)
+			.then(result=>{}
+				
+			)
 		return promise;
 	});
 	return Promise.all(promises).then((res) => {

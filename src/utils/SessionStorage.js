@@ -16,6 +16,7 @@ export default{
 	ServerName:  null,
 	ratesInfo:	 null,
 	ServerLogin: null,
+	ServerChar: null,
 
 	Character:   null,
 	Entity:      null,

@@ -245,7 +245,12 @@ class SPR{
 				data:           out
 			};
 		}
-		return output;
+		return {
+			frames:        output,
+			palette:       this.palette,
+			rgba_index:    this.rgba_index,
+			old_rgba_index:this._indexed_count
+		}
 	}
 }
 

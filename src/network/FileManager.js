@@ -1,11 +1,15 @@
-import Sprite from '../network/Sprite.js';
-import Action from '../network/Action.js';
-import Str from '../network/Str.js';
-import World from '../network/World.js';
-import Model from '../network/Model.js';
+import Sprite from './Sprite.js';
+import Action from './Action.js';
+import Str from './Str.js';
+import World from './World.js';
+import Model from './Model.js';
 import print_d from '../utils/Debug.js';
-import Altitude from '../network/Altitude.js';
-import Ground from '../network/Ground.js';
+import Altitude from './Altitude.js';
+import Ground from './Ground.js';
+import Memory from '../utils/MemoryManager.js';
+import Renderer from '../render/Renderer.js';
+import Texture from '../utils/Texture.js';
+
 
 var FileManager = {};
 FileManager.remoteClient = '';
@@ -34,14 +38,28 @@ FileManager.get = function GetHTTP( filename )
 
 FileManager.load = function Load( filename, args )
 {
+	var result=Memory.get(filename);
+	if (result) {
+		return Promise.resolve(result);
+	}
 	return this.get(filename)
 		.then(buffer => {
 			var ext    = filename.match(/.[^\.]+$/).toString().substr(1).toLowerCase();
 			var result = null;
 			switch (ext) {
+				case 'bmp':
+					result = URL.createObjectURL(
+						new Blob( [buffer], { type: 'image/' + ext })
+					);
+					result = new Promise((resolve, reject) => {
+						Texture.load( result, function(){
+							Memory.set( filename, this.toDataURL());
+							resolve(this.toDataURL());
+						});
+					});
+					break;
 				case 'jpg':
 				case 'jpeg':
-				case 'bmp':
 				case 'gif':
 				case 'png':
 					result = URL.createObjectURL(
@@ -85,10 +103,27 @@ FileManager.load = function Load( filename, args )
 					if (args && args.to_rgba) {
 						spr.switchToRGBA();
 					}
-					if (args && args.compile) {
-						result = spr.compile();
-					} else {
-						result = spr;
+					result = spr.compile();
+					var gl     = Renderer.getContext();
+					var frames = result.frames;
+					var count  = frames.length;
+					for (i = 0; i < count; i++) {
+						frames[i].texture = gl.createTexture();
+						var precision  = frames[i].type ? gl.LINEAR : gl.NEAREST;
+						var size       = frames[i].type ? gl.RGBA   : gl.LUMINANCE;
+						gl.bindTexture( gl.TEXTURE_2D, frames[i].texture );
+						gl.texImage2D(gl.TEXTURE_2D, 0, size, frames[i].width, frames[i].height, 0, size, gl.UNSIGNED_BYTE, frames[i].data );
+						gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, precision);
+						gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, precision);
+						gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+						gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+					}
+					if (result.rgba_index !== 0) {
+						result.texture = gl.createTexture();
+						gl.bindTexture( gl.TEXTURE_2D, result.texture );
+						gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, result.palette );
+						gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+						gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 					}
 					break;
 				case 'rsw':
@@ -114,17 +149,37 @@ FileManager.load = function Load( filename, args )
 
 				case 'str':
 					result = new Str(buffer, args?.texturePath ?? '');
+					var layers = result.layers;
+					var promises_all=[];
+					for (let i = 0; i < result.layernum; ++i) {
+						layers[i].materials = new Array(layers[i].texcnt);
+						for (let j = 0; j < layers[i].texcnt; ++j) {
+							var promise =	FileManager.load(layers[i].texname[j])
+								.then(texture=>{
+									layers[i].materials[j] = texture;
+								});
+							promises_all.push(promise);
+						}
+					}
+					result = Promise.all(promises_all);
 					break;
-
+				case 'pal':
+					var gl      = Renderer.getContext();
+					var texture = gl.createTexture();
+					var palette = new Uint8Array(buffer);
+					gl.bindTexture( gl.TEXTURE_2D, texture );
+					gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, palette );
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+					gl.generateMipmap( gl.TEXTURE_2D );
+					result = { palette:palette, texture:texture };
+					break;
 				default:
 					result = buffer;
 					break;
 			}
-			if (args && args.keep_name) {
-				result={filename, result}
-			}
 			return result;
-		});
+		})
 };
 
 export default FileManager;

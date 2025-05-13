@@ -1,5 +1,9 @@
 import Struct from './Struct.js';
 
+var bf_byteBuff = new ArrayBuffer(4);
+var bf_wba      = new Int8Array(bf_byteBuff);
+var bf_wia      = new Int32Array(bf_byteBuff);
+
 class BinaryReader {
 	static SEEK_CUR = 1;
 	static SEEK_SET = 2;
@@ -29,10 +33,6 @@ class BinaryReader {
 		else {
 			throw new Error('BinaryReader() - Undefined buffer type');
 		}
-
-		this.bf_byteBuff = new ArrayBuffer(4);
-		this.bf_wba      = new Int8Array(this.bf_byteBuff);
-		this.bf_wia      = new Int32Array(this.bf_byteBuff);
 
 		this.buffer = buffer;
 		this.view   = new DataView( buffer, start || 0 , end || buffer.byteLength);
@@ -164,10 +164,10 @@ class BinaryReader {
 	getPos(){
 		var p, dir, x, y;
 
-		this.bf_wba[2] = this.getUint8();
-		this.bf_wba[1] = this.getUint8();
-		this.bf_wba[0] = this.getUint8();
-		this.bf_wba[3] = 0;
+		bf_wba[2] = this.getUint8();
+		bf_wba[1] = this.getUint8();
+		bf_wba[0] = this.getUint8();
+		bf_wba[3] = 0;
 
 		p         = 0 + bf_wia[0];
 		dir       = p & 0x0f;

@@ -1,29 +1,16 @@
-import MemoryItem from './MemoryItem.js';
 var _memory = {};
 var _rememberTime = 2 * 60 * 1000; // 2 min
 var _lastCheckTick = 0;
 var _cleanUpInterval = 30 * 1000;
 
-function get( filename, onload, onerror )
+function get( filename )
 {
-	var item;
-
-	// Not in memory yet, create slot
 	if (!_memory[filename]) {
-		_memory[filename] = new MemoryItem();
+		return null;
+	}else{
+		_memory[filename].lastTimeUsed = Date.now();
+		return _memory[filename].data;
 	}
-
-	item = _memory[filename];
-
-	if (onload) {
-		item.addEventListener('load', onload );
-	}
-
-	if (onerror) {
-		item.addEventListener('error', onerror );
-	}
-
-	return item.data;
 }
 
 function exist( filename )
@@ -33,16 +20,9 @@ function exist( filename )
 
 function set( filename, data, error )
 {
-	// Not in memory yet, create slot
-	if (!_memory[filename]) {
-		_memory[filename] = new MemoryItem();
-	}
-
-	if (error || !data) {
-		_memory[filename].onerror( error );
-	}
-	else {
-		_memory[filename].onload( data );
+	_memory[filename] = {
+		lastTimeUsed: Date.now(),
+		data: data
 	}
 }
 
@@ -62,7 +42,7 @@ function clean( gl, now )
 
 	for (i = 0; i < count; ++i) {
 		item = _memory[ keys[i] ];
-		if (item.complete && item.lastTimeUsed < tick) {
+		if (item.lastTimeUsed < tick) {
 			remove( gl, keys[i] );
 			list.push( keys[i] );
 		}
@@ -148,10 +128,10 @@ function search(regex)
 }
 
 export default {
-	get:    get,
-	set:    set,
-	clean:  clean,
-	remove: remove,
-	exist:  exist,
-	search: search
+	get,
+	set,
+	clean,
+	remove,
+	exist,
+	search
 };

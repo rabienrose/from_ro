@@ -33,6 +33,7 @@ Network.connect = function( host, port, callback)
 				if (_socket && _socket.ping) {
 					clearInterval(_socket.ping);
 				}
+				
 				_sockets.push(_socket);
 			}
 
@@ -114,7 +115,7 @@ Network.onMessage = function( buf )
 
 		id = fp.readUShort();
 		console.log("0x" + id.toString(16));
-		let packet_len = Packets.list[id].size;
+		let packet_len = Packets.list[id]?Packets.list[id].size:fp.length - offset;
 		if (packet_len < 0) {
 			if (offset + 4 >= fp.length) {
 				_save_buffer = new Uint8Array( buffer, offset, fp.length - offset );
@@ -174,12 +175,10 @@ Network.onClose = function()
 {
 	var idx = _sockets.indexOf(this);
 
-	if (this === _socket) {
-		console.warn('[Network] Disconnect from server');
+	console.warn('[Network] Disconnect from server:',this.ws.url);
 
-		if (_socket.ping) {
-			clearInterval(_socket.ping);
-		}
+	if (this.ping) {
+		clearInterval(this.ping);
 	}
 
 	if (idx !== -1) {
@@ -213,7 +212,6 @@ Network.setPing = function( callback )
 			clearInterval(_socket.ping);
 		}
 		_socket.ping = setInterval( callback, 10000);
-
 		while (_sockets.length > 1) {
 			if (_socket !== _sockets[0]) {
 				_sockets[0].close();

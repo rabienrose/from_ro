@@ -37,6 +37,7 @@ MapRenderer.setMap = function loadMap( mapname )
 	if (MapRenderer.loading) {
 		return;
 	}
+	console.log("setMap:",mapname);
 	mapname = mapname
 		.replace(/^(\d{3})(\d@)/, '$2') // 0061@tower   -> 1@tower
 		.replace(/^\d{3}#/, '');        // 003#prontera -> prontera
@@ -176,6 +177,7 @@ function onMapComplete( success, error )
 	// Sky.init( gl, worldResource );
 	// Damage.init(gl);
 	// EffectManager.init(gl);
+	MapRenderer.onLoad();
 }
 
 MapRenderer.onRender = function OnRender( tick, gl )
