@@ -42,7 +42,7 @@ function Socket( host, port, proxy, onComplete, onMessage, onClose )
 	this.ws.onclose = function OnClose()
 	{
 		self.connected = false;
-		close();
+		this.close();
 
 		if (self.onClose) {
 			self.onClose();

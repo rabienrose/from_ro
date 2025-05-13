@@ -3,8 +3,6 @@ import Texture from './Texture';
 function getContext( canvas, parameters )
 {
 	var gl = null;
-	var args = ['webgl2', 'webgl'];
-	var i, count = args.length;
 	if (!parameters) {
 		parameters = {
 			alpha:              false,
@@ -15,15 +13,7 @@ function getContext( canvas, parameters )
 			preserveDrawingBuffer: true,
 		};
 	}
-	if (canvas.getContext && window.WebGLRenderingContext) {
-		for (i = 0; i < count; ++i) {
-			try {
-				gl = canvas.getContext( args[i], parameters );
-				if (gl)
-					break;
-			} catch(e) {}
-		}
-	}
+	gl = canvas.getContext( 'webgl', parameters );
 	if (!gl) {
 		throw new Error('WebGL::getContext() - Can\'t find a valid context, is WebGL supported ?');
 	}

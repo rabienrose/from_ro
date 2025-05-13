@@ -1,4 +1,7 @@
 import glMatrix from '../utils/gl-matrix.js';
+import Preferences from '../configs/Preferences.js';
+import DB from '../configs/DBManager.js';
+
 
 var mat4        = glMatrix.mat4;
 var mat3        = glMatrix.mat3;
@@ -45,6 +48,15 @@ Camera.indoorRange 			= 240;
 Camera.MAX_ZOOM_INDOOR 				= 2.5;
 Camera.MIN_ALTITUDE_INDOOR 		= 220;
 Camera.MAX_ALTITUDE_INDOOR 		= 240;
+
+Camera.enable3RDPerson = false;
+Camera.enable1STPerson = false;
+
+Camera.states = {
+	isometric: 0,
+	third_person: 1,
+	first_person: 2
+};
 
 Camera.action = {
 	active: false,
@@ -101,9 +113,9 @@ Camera.processQuake = function processQuake( tick )
 
 Camera.init = function Init()
 {
-	Camera.enable3RDPerson = Configs.get('ThirdPersonCamera', false);
-	Camera.enable1STPerson = Configs.get('FirstPersonCamera', false);
-	Camera.MAX_ZOOM = Configs.get('CameraMaxZoomOut', C_MAX_ZOOM);
+	Camera.enable3RDPerson = true;
+	Camera.enable1STPerson = false;
+	Camera.MAX_ZOOM = 5;
 	Camera.lastTick  = Date.now();
 	Camera.angle[0]      = Camera.range % 360.0;//240.0;
 	Camera.angle[1]      = Camera.rotationFrom % 360.0;
@@ -120,7 +132,7 @@ Camera.init = function Init()
 	} else {
 		Camera.MIN_ZOOM = C_MIN_ZOOM;
 	}
-	Camera.currentMap = getModule('Renderer/MapRenderer').currentMap;
+	Camera.currentMap = 'cmd_fild03.gat';
 	if (DB.isIndoor(Camera.currentMap)) {
 		Camera.zoomFinal = Preferences.indoorZoom || 125;
 		Camera.angleFinal[0] = 230;
@@ -266,8 +278,7 @@ Camera.update = function Update( tick )
 		Camera.position[0] += ( -Camera.target.position[0] - Camera.position[0] ) * lerp ;
 		Camera.position[1] += ( -Camera.target.position[1] - Camera.position[1] ) * lerp ;
 		Camera.position[2] += (  Camera.target.position[2] - Camera.position[2] ) * lerp ;
-	}
-	else {
+	}else {
 		Camera.position[0] = -Camera.target.position[0];
 		Camera.position[1] = -Camera.target.position[1];
 		Camera.position[2] =  Camera.target.position[2];
@@ -286,6 +297,12 @@ Camera.update = function Update( tick )
 	Camera.direction    = Math.floor( ( Camera.angle[1] + 22.5 ) / 45 ) % 8;
 	var matrix = Camera.modelView;
 	mat4.identity( matrix );
+	Camera.zoom=125;
+	Camera.angle[0]=230;
+	Camera.angle[1]=330;
+	Camera.position[0]=0;
+	Camera.position[1]=0;
+	Camera.position[2]=480;
 	mat4.translateZ( matrix, (Camera.altitudeFrom - Camera.zoom) / 2);
 	mat4.rotateX( matrix, matrix, Camera.angle[0] / 180 * Math.PI );
 	mat4.rotateY( matrix, matrix, Camera.angle[1] / 180 * Math.PI );

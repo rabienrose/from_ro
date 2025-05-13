@@ -21,7 +21,7 @@ export default defineConfig({
         drop_debugger: true,
       },
       output: {
-        comments: true,
+        comments: false,
       },
     }
   }

@@ -48,7 +48,7 @@ Network.sendPacket = function( Packet )
 		let id = fp.readUShort()
 		console.log("%c[Network] Dump Send: \n%cPacket ID: 0x%s\nPacket Name: %s\nLength: %d\nContent:\n%s", 
 			'color:#007070', 'color:#FFFFFF',
-			id.toString(16), Packet.constructor.name, pkt.buffer.byteLength, utilsBufferToHexString(pkt.buffer).toUpperCase());
+			id.toString(16), Packet.constructor.name, pkt.buffer.byteLength, Network.utilsBufferToHexString(pkt.buffer).toUpperCase());
 	}
 	Network.send( pkt.buffer );
 }
@@ -77,12 +77,12 @@ Network.hookPacket = function( packet, callback )
 	Packets.list[ packet.id ].callback = callback;
 }
 
-var read = function(callback)
+Network.read = function(callback)
 {
-	read.callback = callback;
+	Network.read.callback = callback;
 }
 
-read.callback = null;
+Network.read.callback = null;
 
 Network.onMessage = function( buf )
 {
@@ -101,9 +101,9 @@ Network.onMessage = function( buf )
 		buffer = buf;
 	}
 	fp = new BinaryReader( buffer );
-	if (read.callback) {
-		read.callback( fp );
-		read.callback = null;
+	if (Network.read.callback) {
+		Network.read.callback( fp );
+		Network.read.callback = null;
 	}
 	while (fp.tell() < fp.length) {
 		offset = fp.tell();
@@ -113,6 +113,7 @@ Network.onMessage = function( buf )
 		}
 
 		id = fp.readUShort();
+		console.log("0x" + id.toString(16));
 		let packet_len = Packets.list[id].size;
 		if (packet_len < 0) {
 			if (offset + 4 >= fp.length) {
@@ -141,9 +142,11 @@ Network.onMessage = function( buf )
 				let buffer_console = new Uint8Array( buffer, 0, length );
 				console.log("%c[Network] Dump Recv:\n%cPacket ID: 0x%s\nPacket Name: %s\nLength: %d\nContent:\n%s", 
 					'color:#900090', 'color:#FFFFFF', 
-					id.toString(16), packet.name, length, utilsBufferToHexString(buffer_console).toUpperCase());
+					id.toString(16), packet.name, length, Network.utilsBufferToHexString(buffer_console).toUpperCase());
 			}
+			
 			packet.instance = new packet.Struct(fp, offset);
+			console.log( '%c[Network] Recv:', 'color:#900090', packet.instance, packet.callback ? '' : '(no callback)'  );
 			if (packet.callback) {
 				packet.callback(packet.instance);
 			}
@@ -152,7 +155,7 @@ Network.onMessage = function( buf )
 				let unknown_buffer = new Uint8Array( buffer, 0, length );
 				console.log("%c[Network] Dump Recv:\n%cPacket ID: 0x%s\nPacket Name: [UNKNOWN]\nLength: %d\nContent:\n%s",
 					'color:#900090', 'color:#FFFFFF',
-					id.toString(16), length, utilsBufferToHexString(unknown_buffer).toUpperCase());
+					id.toString(16), length, Network.utilsBufferToHexString(unknown_buffer).toUpperCase());
 			}
 			console.error(
 				'[Network] Packet "%c0x%s%c" not registered, skipping %d bytes.',

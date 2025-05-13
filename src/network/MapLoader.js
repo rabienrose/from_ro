@@ -43,6 +43,7 @@ MapLoader.load = function Load( mapname ){
 		altitude = res;
 		MapLoader.setProgress( 2 );
 		altitude.compile();
+		MapLoader.MAP_ALTITUDE(altitude);
 		return FileManager.load(MapLoader.map_root + getFilePath(world.files.gnd));
 	})
 	.then((res) => {
@@ -57,22 +58,34 @@ MapLoader.load = function Load( mapname ){
 			MapLoader.fileCount += 32;
 		}
 		var i, count;
-		var textures = [];
-		if (ground.waterVertCount) {
+		var textures_water = [];
+		if (compiledGround.waterVertCount) {
 			var path = MapLoader.texture_root + '\xbf\xf6\xc5\xcd/water' + world.water.type;
 			for (i = 0; i < 32; ++i) {
-				textures.push(path + ( i<10 ? '0'+i : i) + '.jpg');
+				textures_water.push(path + ( i<10 ? '0'+i : i) + '.jpg');
 			}
 		}
+		var textures = [];
 		for (i = 0, count = ground.textures.length; i < count; ++i ) {
 			textures.push(MapLoader.texture_root + ground.textures[i]);
 		}
+		var promises_water = textures_water.map(filename => {
+			return FileManager.load(filename);
+		});
 		var promises = textures.map(filename => {
 			return FileManager.load(filename);
 		});
-		return Promise.all(promises).then((res) => {
+		Promise.all(promises_water).then((res) => {
 			MapLoader.setProgress(4);
-			//to-do
+			world.water.images      = res;
+			MapLoader.MAP_WORLD(world.compile());
+		})
+		.then(() => {
+			return Promise.all(promises).then((res) => {
+				MapLoader.setProgress(4);
+				compiledGround.textures = res;
+				MapLoader.MAP_GROUND(compiledGround);
+			});
 		})
 	})
 	.then(() => {
@@ -86,16 +99,26 @@ MapLoader.load = function Load( mapname ){
 			}
 		}
 		var promises = files.map(filename => {
-			return FileManager.load(filename);
+			return FileManager.load(filename, {keep_name:true});
 		});
 		return Promise.all(promises).then((res) => {
 			MapLoader.setProgress(5);
-			var i, count;
-			for (i = 0, count = files.length; i < count; ++i) {
-				res[i].filename = files[i];
-				res[i].createInstance(models[i],ground.width,ground.height);
+			var filenames=res.map(r=>r.filename);
+			var objects=res.map(r=>r.result);
+			var i, count, pos;
+			for (i = 0, count = models.length; i < count; ++i) {
+				pos = filenames.indexOf(models[i].filename);
+				if (pos === -1) {
+					continue;
+				}
+				objects[pos].filename = filenames[pos];
+				objects[pos].createInstance(
+					models[i],
+					ground.width,
+					ground.height
+				);
 			}
-			MapLoader.compileModels(res);
+			MapLoader.compileModels(objects);
 		});
 	});
 };
@@ -108,6 +131,8 @@ MapLoader.compileModels = function CompileModels( objects )
 	var progress = MapLoader.progress;
 	var models = [];
 	bufferSize = 0;
+	
+	
 	for (i = 0, count = objects.length; i < count; ++i) {
 		object = objects[i].compile();
 		nodes  = object.meshes;
@@ -176,16 +201,22 @@ MapLoader.mergeMeshes = function MergeMeshes( objects, bufferSize )
 		buffer.set( object.mesh, offset );
 		offset += size;
 	}
-	console.log(textures,infos);
-
-	// var promises = textures.map(filename => {
-	// 	return FileManager.load(filename);
-	// });
-	// return Promise.all(promises).then((res) => {
-	// 	loader.setProgress(7);
-	// 	console.log(res);
+	var promises = textures.map(filename => {
+		var promise = FileManager.load(filename, {keep_name:true});
+		return promise;
+	});
+	return Promise.all(promises).then((res) => {
+		MapLoader.setProgress(7);
+		var i, count, pos;
+		var filenames=res.map(r=>r.filename);
+		for (i = 0, count = infos.length; i < count; ++i) {
+			pos = filenames.indexOf(infos[i].filename);
+			infos[i].texture = res[pos].result;
+		}
+		MapLoader.MAP_MODELS({buffer, infos});
+		MapLoader.MAP_COMPLETE();
 		
-	// });
+	});
 };
 
 export default MapLoader;

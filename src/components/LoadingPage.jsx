@@ -3,47 +3,18 @@ import FileManager from "../network/FileManager.js";
 import "./LoadingPage.css";
 
 const LoadingPage = ({
-  progress,
-  height = "30px",
-  backgroundColor = "#ddd",
-  foregroundColor = "#4caf50",
-  b_visible = true
+  progress
 }) => {
-  const [img_src, setImgSrc] = useState(null);
-  useEffect(() => {
-    if (b_visible) {
-      FileManager.load("/resources/background/background.jpg").then((img) => {
-        console.log(img);
-        setImgSrc(img);
-      });
-    }
-  }, [b_visible]);
-  
-  if (!b_visible) {
-    return null;
-  }else{
-    return (
-      <div id="root-container">
-        <img src={img_src}></img>
-        <div
-          className="progress-bar-container"
-          style={{
-          height: height,
-          backgroundColor: backgroundColor
-        }}
-        >
-          <div
-            className="progress-bar-fill"
-            style={{
-              width: `${progress}%`,
-              height: "100%",
-              backgroundColor: foregroundColor
-            }}
-          ></div>
+  return (
+    <div className="loading-container">
+      <div className="loading-wrapper">
+        <div className="loading-title">加载中...</div>
+        <div className="progress-bar-container">
+          <div className="progress-bar-fill" style={{width: `${progress}%`}}></div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 };
 
 export default LoadingPage;

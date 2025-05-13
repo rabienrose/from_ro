@@ -1,6 +1,9 @@
 import glMatrix from '../utils/gl-matrix.js';
 import jQuery from '../utils/jQuery.js';
 import WebGL from '../utils/WebGL.js';
+import Session from '../utils/SessionStorage.js';
+import Camera from './Camera.js';
+
 var mat4          = glMatrix.mat4;
 
 var Renderer = {};
@@ -11,20 +14,20 @@ Renderer.width = 0;
 Renderer.height = 0;
 Renderer.updateId = 0;
 Renderer.tick = 0;
-Renderer.vFov = 15.0;
+Renderer.vFov = 90.0;
 Renderer.renderCallbacks = [];
-
-Renderer.init = function init( canvas, param)
+Renderer.frameLimit = 10;
+Renderer.init = function init(param)
 {
-	Renderer.canvas = canvas;
 	if (!Renderer.gl) {
+		Renderer.canvas = document.createElement('canvas');
+		document.body.appendChild(Renderer.canvas);
+		Renderer.canvas.style.position = 'absolute';
+		Renderer.canvas.style.zIndex = '-1';
+		Renderer.canvas.style.width = '100%';
+		Renderer.canvas.style.height = '100%';
+		
 		Renderer.gl = WebGL.getContext( Renderer.canvas, param );
-		jQuery(window)
-			.on('resize', Renderer.onResize)
-			.on('contextmenu',function(){
-				return false;
-			});
-		Renderer.onResize();
 		Renderer.resize();
 	}
 	var gl = Renderer.gl;
@@ -37,7 +40,7 @@ Renderer.init = function init( canvas, param)
 
 Renderer.show = function show(){
 	if (!Renderer.canvas.parentNode) {
-		document.body.appendChild(Renderer.canvas);
+		
 	}
 };
 
@@ -62,22 +65,23 @@ Renderer.resize = function resize()
 	var width, height;
 	width  = window.innerWidth  || document.body.offsetWidth;
 	height = window.innerHeight || document.body.offsetHeight;
-	Renderer.width  = width;
-	Renderer.height = height;
+	Renderer.width  = Renderer.canvas.width=width;
+	Renderer.height = Renderer.canvas.height=height;
 	Renderer.gl.viewport( 0, 0, width, height );
-	// mat4.perspective( Renderer.vFov, width/height, 1, 1000, Camera.projection );
-	// Background.resize( Renderer.width, Renderer.height );
-	// getModule('UI/UIManager').fixResizeOverflow( Renderer.width, Renderer.height );
+	mat4.perspective_custom( Renderer.vFov, width/height, 1, 3000, Camera.projection );
 };
 
 Renderer.rendering = false;
-Renderer._render = function render()
+Renderer._render = function render(timeDelta)
 {
+	var newTick = Date.now();
 	Renderer.updateId = window.requestAnimationFrame( Renderer._render);
 	var i, count;
 	for (i = 0, count = Renderer.renderCallbacks.length; i < count; ++i) {
 		Renderer.renderCallbacks[i]( Renderer.tick, Renderer.gl );
 	}
+	Session.serverTick += (newTick - Renderer.tick);
+	Renderer.tick = newTick;
 };
 
 Renderer.render = function renderCallback( fn )

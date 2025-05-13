@@ -174,7 +174,7 @@ glMatrix.mat4.toInverseMat3 = function (mat, dest) {
 	return dest;
 };
 
-glMatrix.mat4.perspective_c = function (fovy, aspect, near, far, dest) {
+glMatrix.mat4.perspective_custom = function (fovy, aspect, near, far, dest) {
 	var top = near * Math.tan(fovy * Math.PI / 360.0),
 		right = top * aspect;
 	return glMatrix.mat4.frustum(dest, -right, right, -top, top, near, far);

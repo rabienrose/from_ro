@@ -1,6 +1,20 @@
 import Renderer from './Renderer.js';
 import Camera from './Camera.js';
 import Ground from './map/Ground.js';
+import MapLoader from '../network/MapLoader.js';
+import SoundManager from '../audio/SoundManager.js';
+import BGM from '../audio/BGM.js';
+import Altitude from './map/Altitude.js';
+import Water from './map/Water.js';
+import Sounds from './map/Sounds.js';
+import Models from './map/Models.js';
+import DB from '../configs/DBManager.js';
+import MemoryManager from '../utils/MemoryManager.js';
+import Session from '../utils/SessionStorage.js';
+// import Sky from './Effects/Sky.js';
+// import SpriteRenderer from './SpriteRenderer.js';
+// import Damage from './Effects/Damage.js';
+// import EffectManager from './EffectManager.js';
 
 var MapRenderer = {};
 MapRenderer.currentMap = '';
@@ -26,57 +40,33 @@ MapRenderer.setMap = function loadMap( mapname )
 	mapname = mapname
 		.replace(/^(\d{3})(\d@)/, '$2') // 0061@tower   -> 1@tower
 		.replace(/^\d{3}#/, '');        // 003#prontera -> prontera
-	// SoundManager.stop();
+	SoundManager.stop();
 	Renderer.stop();
-	// UIManager.removeComponents();
 	if (MapRenderer.currentMap !== mapname) {
 		MapRenderer.loading = true;
-		// BGM.stop();
+		BGM.stop();
 		MapRenderer.currentMap = mapname;
 		var filename = mapname.replace(/\.gat$/i, '.rsw');
-		// Background.setLoading(function() {
-		// 	// Hooking Thread
-		// 	Thread.hook('MAP_PROGRESS', onProgressUpdate.bind(MapRenderer) );
-		// 	Thread.hook('MAP_WORLD',    onWorldComplete.bind(MapRenderer) );
-		// 	Thread.hook('MAP_GROUND',   onGroundComplete.bind(MapRenderer) );
-		// 	Thread.hook('MAP_ALTITUDE', onAltitudeComplete.bind(MapRenderer) );
-		// 	Thread.hook('MAP_MODELS',   onModelsComplete.bind(MapRenderer) );
-		// 	MapRenderer.free();
-		// 	Renderer.remove();
-		// 	Thread.send('LOAD_MAP', filename, onMapComplete.bind(MapRenderer) );
-		// });
-
+		console.log(filename);
+		MapRenderer.free();
+		// Renderer.remove();
+		MapLoader.MAP_WORLD=onWorldComplete.bind(MapRenderer)
+		MapLoader.MAP_GROUND=onGroundComplete.bind(MapRenderer)
+		MapLoader.MAP_ALTITUDE=onAltitudeComplete.bind(MapRenderer)
+		MapLoader.MAP_MODELS=onModelsComplete.bind(MapRenderer)
+		MapLoader.MAP_PROGRESS=onProgressUpdate.bind(MapRenderer)
+		MapLoader.MAP_COMPLETE=onMapComplete.bind(MapRenderer)
+		MapLoader.load(filename);
 		return;
 	}
-
-	// var gl = Renderer.getContext();
-	// EntityManager.free();
-	// Damage.free( gl );
-	// EffectManager.free( gl );
-	// Background.remove(function(){
-	// 	MapRenderer.onLoad();
-	// 	Sky.setUpCloudData();
-	// 	Renderer.render( MapRenderer.onRender );
-	// });
 };
 
 MapRenderer.free = function Free()
 {
 	var gl = Renderer.getContext();
 
-	EntityManager.free();
-	GridSelector.free( gl );
-	Sounds.free();
-	Effects.free();
-	Ground.free( gl );
-	Water.free( gl );
-	Models.free( gl );
-	Damage.free( gl );
-	EffectManager.free( gl );
 	SoundManager.stop();
 	BGM.stop();
-
-	Mouse.intersect = false;
 
 	MapRenderer.light   = null;
 	MapRenderer.water   = null;
@@ -95,6 +85,7 @@ function onWorldComplete( data )
 	MapRenderer.water   = data.water;
 	MapRenderer.sounds  = data.sound;
 	MapRenderer.effects = data.effect;
+
 
 	MapRenderer.light.direction = new Float32Array(3);
 	var longitude        = MapRenderer.light.longitude * Math.PI / 180;
@@ -128,8 +119,6 @@ function onGroundComplete( data )
 		MapRenderer.sounds[i].cycle    =   !MapRenderer.sounds[i].cycle ? 7:MapRenderer.sounds[i].cycle;
 		Sounds.add(MapRenderer.sounds[i]);
 	}
-
-
 	count = MapRenderer.effects.length;
 	for (i = 0; i < count; ++i) {
 		// Note: effects objects do not need to be centered in a cell
@@ -141,7 +130,7 @@ function onGroundComplete( data )
 
 		MapRenderer.effects[i].tick    = 0;
 
-		Effects.add(MapRenderer.effects[i]);
+		// Effects.add(MapRenderer.effects[i]);
 	}
 
 	MapRenderer.effects.length = 0;
@@ -150,9 +139,7 @@ function onGroundComplete( data )
 
 function onAltitudeComplete( data )
 {
-	var gl = Renderer.getContext();
 	Altitude.init( data );
-	GridSelector.init( gl );
 }
 
 function onModelsComplete( data )
@@ -165,68 +152,57 @@ function onMapComplete( success, error )
 	var worldResource = MapRenderer.currentMap.replace(/\.gat$/i, '.rsw');
 	var mapInfo       = DB.getMap(worldResource);
 
-	// Problem during loading ?
-	if (!success) {
-		UIManager.showErrorBox( error ).ui.css('zIndex', 1000);
-		return;
-	}
-
 	BGM.play((mapInfo && mapInfo.mp3) || '01.mp3');
 
-	// Apply fog to map
-	MapRenderer.fog.exist = !!(mapInfo && mapInfo.fog);
-	if (MapRenderer.fog.exist) {
-		MapRenderer.fog.near   = mapInfo.fog.near * 240;
-		MapRenderer.fog.far    = mapInfo.fog.far  * 240;
-		MapRenderer.fog.factor = mapInfo.fog.factor;
-		MapRenderer.fog.color.set( mapInfo.fog.color );
-	}
+	// MapRenderer.fog.exist = !!(mapInfo && mapInfo.fog);
+	// if (MapRenderer.fog.exist) {
+	// 	MapRenderer.fog.near   = mapInfo.fog.near * 240;
+	// 	MapRenderer.fog.far    = mapInfo.fog.far  * 240;
+	// 	MapRenderer.fog.factor = mapInfo.fog.factor;
+	// 	MapRenderer.fog.color.set( mapInfo.fog.color );
+	// }
 
 	// Initialize renderers
 	Renderer.init();
 	var gl = Renderer.getContext();
+	MapRenderer.loading = false;
+	// Sky.setUpCloudData();
 
-	SpriteRenderer.init(gl);
-	Sky.init( gl, worldResource );
-	Damage.init(gl);
-	EffectManager.init(gl);
+	// Display game
+	// Renderer.show();
+	Renderer.render( MapRenderer.onRender );
 
-	// Starting to render
-	Background.remove(function(){
-		MapRenderer.loading = false;
-		Mouse.intersect     = true;
-
-		MapRenderer.onLoad();
-		Sky.setUpCloudData();
-
-		// Display game
-		Renderer.show();
-		Renderer.render( MapRenderer.onRender );
-	});
+	// SpriteRenderer.init(gl);
+	// Sky.init( gl, worldResource );
+	// Damage.init(gl);
+	// EffectManager.init(gl);
 }
 
 MapRenderer.onRender = function OnRender( tick, gl )
 {
 	var fog   = MapRenderer.fog;
-	fog.use   = MapPreferences.fog;
+	fog.use   = false;
 	var light = MapRenderer.light;
+
 	var modelView, projection, normalMat;
+	var x, y;
+
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 	Camera.update( tick );
+
 	modelView  = Camera.modelView;
 	projection = Camera.projection;
 	normalMat  = Camera.normalMat;
+
+	// Spam map effects
 	// Effects.spam( Session.Entity.position, tick);
+
 	Ground.render(gl, modelView, projection, normalMat, fog, light );
-	// Models.render(gl, modelView, projection, normalMat, fog, light );
-	// Sky.render( gl, modelView, projection, fog, tick );
-	// EffectManager.render( gl, modelView, projection, fog, tick, true);
-	// EntityManager.render( gl, modelView, projection, fog, false );
+	Models.render(gl, modelView, projection, normalMat, fog, light );
+
 	// Water.render( gl, modelView, projection, fog, light, tick );
-	// Damage.render( gl, modelView, projection, fog, tick );
-	// EffectManager.render( gl, modelView, projection, fog, tick, false);
-	// EntityManager.render( gl, modelView, projection, fog, true );
 	// Sounds.render( Session.Entity.position, tick );
+	MemoryManager.clean(gl, tick);
 };
 
 export default MapRenderer;

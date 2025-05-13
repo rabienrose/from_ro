@@ -1,5 +1,10 @@
 import Texture from '../../utils/Texture.js';
+import WebGL from '../../utils/WebGL.js';
+import Preferences from '../../configs/Preferences.js';
+import glMatrix from '../../utils/gl-matrix.js';
 
+var mat4        = glMatrix.mat4;
+var mat3        = glMatrix.mat3;
 var _program       = null;
 var _buffer = null;
 var _lightmap = null;
@@ -33,8 +38,8 @@ var _vertexShader   = `
 	uniform mat3 uNormalMat;
 
 	void main(void) {
+		// gl_Position = vec4(aPosition.x*0.02, aPosition.z*0.02, 0.0, 1.0);
 		gl_Position     = uProjectionMat * uModelViewMat * vec4( aPosition, 1.0);
-
 		vTextureCoord   = aTextureCoord;
 		vLightmapCoord  = aLightmapCoord;
 		vTileColorCoord = aTileColorCoord;
@@ -111,40 +116,64 @@ function render( gl, modelView, projection, normalMat, fog, light )
 {
 	var uniform = _program.uniform;
 	var attribute = _program.attribute;
+
 	gl.useProgram( _program );
+
+	// Bind matrix
 	gl.uniformMatrix4fv( uniform.uModelViewMat,  false, modelView );
 	gl.uniformMatrix4fv( uniform.uProjectionMat, false, projection );
 	gl.uniformMatrix3fv( uniform.uNormalMat,     false, normalMat );
+
+	// Bind light
 	gl.uniform3fv( uniform.uLightDirection, light.direction );
 	gl.uniform1f(  uniform.uLightOpacity,   light.opacity );
 	gl.uniform3fv( uniform.uLightAmbient,   light.ambient );
 	gl.uniform3fv( uniform.uLightDiffuse,   light.diffuse );
+
+	// Render lightmap ?
 	gl.uniform1i(  uniform.uLightMapUse, Preferences.lightmap );
+
+	// Fog settings
 	gl.uniform1i(  uniform.uFogUse,   fog.use && fog.exist );
 	gl.uniform1f(  uniform.uFogNear,  fog.near );
 	gl.uniform1f(  uniform.uFogFar,   fog.far  );
 	gl.uniform3fv( uniform.uFogColor, fog.color );
+
+	// Enable all attributes
 	gl.enableVertexAttribArray( attribute.aPosition );
 	gl.enableVertexAttribArray( attribute.aVertexNormal );
 	gl.enableVertexAttribArray( attribute.aTextureCoord );
 	gl.enableVertexAttribArray( attribute.aLightmapCoord );
 	gl.enableVertexAttribArray( attribute.aTileColorCoord );
+
 	gl.bindBuffer( gl.ARRAY_BUFFER, _buffer );
+
+	// Link attribute
 	gl.vertexAttribPointer( attribute.aPosition,       3, gl.FLOAT, false, 12*4,  0   );
 	gl.vertexAttribPointer( attribute.aVertexNormal,   3, gl.FLOAT, false, 12*4,  3*4 );
 	gl.vertexAttribPointer( attribute.aTextureCoord,   2, gl.FLOAT, false, 12*4,  6*4 );
 	gl.vertexAttribPointer( attribute.aLightmapCoord,  2, gl.FLOAT, false, 12*4,  8*4 );
 	gl.vertexAttribPointer( attribute.aTileColorCoord, 2, gl.FLOAT, false, 12*4, 10*4 );
+
+	// Texture Atlas
 	gl.activeTexture( gl.TEXTURE0 );
 	gl.bindTexture( gl.TEXTURE_2D, _textureAtlas );
 	gl.uniform1i( uniform.uDiffuse, 0 );
+
+	// LightMap
 	gl.activeTexture( gl.TEXTURE1 );
 	gl.bindTexture( gl.TEXTURE_2D, _lightmap );
 	gl.uniform1i( uniform.uLightmap, 1 );
+
+	// Tile Color
 	gl.activeTexture( gl.TEXTURE2 );
 	gl.bindTexture( gl.TEXTURE_2D, _tileColor );
 	gl.uniform1i( uniform.uTileColor, 2 );
+
+	// Send mesh
 	gl.drawArrays(  gl.TRIANGLES, 0, _vertCount );
+
+	// Is it needed ?
 	gl.disableVertexAttribArray( attribute.aPosition );
 	gl.disableVertexAttribArray( attribute.aVertexNormal );
 	gl.disableVertexAttribArray( attribute.aTextureCoord );
@@ -255,8 +284,10 @@ function init( gl, data )
 	if (!_program) {
 		_program = WebGL.createShaderProgram( gl, _vertexShader, _fragmentShader );
 	}
+
 	gl.bindBuffer( gl.ARRAY_BUFFER, _buffer );
 	gl.bufferData( gl.ARRAY_BUFFER, data.mesh, gl.STATIC_DRAW );
+
 	initLightmap( gl, data.lightmap, data.lightmapSize );
 	initTileColor( gl, data.tileColor, data.width, data.height );
 	initTextures( gl, data.textures );

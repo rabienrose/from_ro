@@ -1,4 +1,3 @@
-import FileManager from "../network/FileManager";
 import glMatrix from '../utils/gl-matrix';
 import Session from "../utils/SessionStorage";
 
@@ -12,7 +11,7 @@ var _sounds = {};
 var _cache = {};
 var mediaPlayerCount = 0;
 var SoundManager = {};
-SoundManager.volume = Preferences.Sound.volume;
+SoundManager.volume = 1;
 
 SoundManager.play = function play( filename, vol ) {
 	var volume;
@@ -23,11 +22,6 @@ SoundManager.play = function play( filename, vol ) {
 	}
 	else {
 		volume = this.volume;
-	}
-
-	// Don't play sound if you can't hear it or sound is stopped
-	if (volume <= 0 || !Preferences.Sound.play) {
-		return;
 	}
 	
 	if(!(filename in _sounds)){
@@ -46,34 +40,30 @@ SoundManager.play = function play( filename, vol ) {
 		_sounds[filename].lastTick = Date.now();
 		return;
 	}
+	var sound;
+	if (!(filename in _sounds)){
+		return;
+	}
+	// Wait a delay to replay a sound and don't play too many times (self balancing formula based on total media players)
+	if (filename in _sounds && (_sounds[filename].lastTick > Date.now() - C_SAME_SOUND_DELAY ||  _sounds[filename].instances.length > balancedMax(C_MAX_SOUND_INSTANCES))) {
+		return;
+	}
+
+	// Initialiaze the sound and play it
+	sound             = document.createElement('audio');
+	mediaPlayerCount++;
+	sound.filename    = filename;
+	sound.src         = 'resources/wav/' + filename;
+	sound.volume      = Math.min(volume,1.0);
+	sound._volume     = volume;
 	
-	// Get the sound from client.
-	FileManager.load( 'resources/wav/' + filename).then(url => {
-		var sound;
-		if (!(filename in _sounds)){
-			return;
-		}
-		// Wait a delay to replay a sound and don't play too many times (self balancing formula based on total media players)
-		if (filename in _sounds && (_sounds[filename].lastTick > Date.now() - C_SAME_SOUND_DELAY ||  _sounds[filename].instances.length > balancedMax(C_MAX_SOUND_INSTANCES))) {
-			return;
-		}
+	sound.addEventListener('error', onSoundError, false);
+	sound.addEventListener('ended', onSoundEnded, false);
+	sound.play();
 
-		// Initialiaze the sound and play it
-		sound             = document.createElement('audio');
-		mediaPlayerCount++;
-		sound.filename    = filename;
-		sound.src         = url;
-		sound.volume      = Math.min(volume,1.0);
-		sound._volume     = volume;
-		
-		sound.addEventListener('error', onSoundError, false);
-		sound.addEventListener('ended', onSoundEnded, false);
-		sound.play();
-
-		// Add it to the list
-		_sounds[filename].instances.push(sound);
-		_sounds[filename].lastTick = Date.now();
-	});
+	// Add it to the list
+	_sounds[filename].instances.push(sound);
+	_sounds[filename].lastTick = Date.now();
 };
 
 SoundManager.playPosition = function playPosition(filename, srcPosition)
@@ -110,12 +100,6 @@ SoundManager.stop = function stop( filename )
 		}
 		delete _sounds[key];
 	});
-
-	// Remove from cache
-	list = Memory.search(/\.wav$/);
-	for (i = 0, count = list.length; i < count; ++i) {
-		Memory.remove( list[i] );
-	}
 };
 
 SoundManager.setVolume = function setVolume( volume )

@@ -120,6 +120,9 @@ FileManager.load = function Load( filename, args )
 					result = buffer;
 					break;
 			}
+			if (args && args.keep_name) {
+				result={filename, result}
+			}
 			return result;
 		});
 };
