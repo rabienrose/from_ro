@@ -14,9 +14,11 @@ import Camera from "./render/Camera.js";
 import './App.css';
 import test_renderer from "./render/Renderer_test.js";
 import Ground from "./render/map/Ground.js";  
-import Entity from "./render/Entity/Entity.js";
+import Entity from "./render/entity/Entity.js";
 import SpriteRenderer from "./render/SpriteRenderer.js";
-FileManager.remoteClient = 'http://localhost:8001';
+import MemoryManager from "./utils/MemoryManager.js";
+import Preferences from "./configs/Preferences.js";
+FileManager.remoteClient = 'http://localhost:8002';
 
 const App = () => {
   const [showLogin,setShowLogin] = useState(false);
@@ -29,18 +31,24 @@ const App = () => {
       Camera.setTarget({position:[0,0,0]});
       Camera.init();
       SpriteRenderer.init(Renderer.gl);
-      FileManager.load("/resources/effect/windhit1.str")
-      .then(result=>{
-        console.log(result);
-      })
-      // if (AutoNewUser.connected==false){
-      //   AutoNewUser.onEnterMap=()=>{
-      //     setShowMap(true);
-      //   }
-      //   AutoNewUser.start();
-      // }else{
-      //   setShowMap(true);
-      // }
+
+      // FileManager.load("/resources/effect/windhit1.str")
+      //   .then(result=>{
+      //     console.log(result);
+      //   })
+      // FileManager.load("/resources/effect/windhit1.str")
+      //   .then(result=>{
+      //     console.log(result);
+      //     console.log(MemoryManager._memory);
+      //   })
+      if (AutoNewUser.connected==false){
+        AutoNewUser.onEnterMap=()=>{
+          setShowMap(true);
+        }
+        AutoNewUser.start();
+      }else{
+        setShowMap(true);
+      }
     }
     BGM.initHTML5();
   }, []);

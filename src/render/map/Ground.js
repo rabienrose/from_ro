@@ -131,7 +131,7 @@ function render( gl, modelView, projection, normalMat, fog, light )
 	gl.uniform3fv( uniform.uLightDiffuse,   light.diffuse );
 
 	// Render lightmap ?
-	gl.uniform1i(  uniform.uLightMapUse, Preferences.lightmap );
+	gl.uniform1i(  uniform.uLightMapUse, Preferences.Map.lightmap );
 
 	// Fog settings
 	gl.uniform1i(  uniform.uFogUse,   fog.use && fog.exist );

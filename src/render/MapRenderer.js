@@ -11,6 +11,8 @@ import Models from './map/Models.js';
 import DB from '../configs/DBManager.js';
 import MemoryManager from '../utils/MemoryManager.js';
 import Session from '../utils/SessionStorage.js';
+import EntityManager from './EntityManager.js';
+import Mouse from '../control/MouseEventHandler.js'
 // import Sky from './Effects/Sky.js';
 // import SpriteRenderer from './SpriteRenderer.js';
 // import Damage from './Effects/Damage.js';
@@ -37,7 +39,6 @@ MapRenderer.setMap = function loadMap( mapname )
 	if (MapRenderer.loading) {
 		return;
 	}
-	console.log("setMap:",mapname);
 	mapname = mapname
 		.replace(/^(\d{3})(\d@)/, '$2') // 0061@tower   -> 1@tower
 		.replace(/^\d{3}#/, '');        // 003#prontera -> prontera
@@ -48,7 +49,6 @@ MapRenderer.setMap = function loadMap( mapname )
 		BGM.stop();
 		MapRenderer.currentMap = mapname;
 		var filename = mapname.replace(/\.gat$/i, '.rsw');
-		console.log(filename);
 		MapRenderer.free();
 		// Renderer.remove();
 		MapLoader.MAP_WORLD=onWorldComplete.bind(MapRenderer)
@@ -139,7 +139,7 @@ function onGroundComplete( data )
 }
 
 function onAltitudeComplete( data )
-{
+{	
 	Altitude.init( data );
 }
 
@@ -170,7 +170,8 @@ function onMapComplete( success, error )
 	// Sky.setUpCloudData();
 
 	// Display game
-	// Renderer.show();
+	MapRenderer.loading = false;
+	Mouse.intersect     = true;
 	Renderer.render( MapRenderer.onRender );
 
 	// SpriteRenderer.init(gl);
@@ -180,6 +181,7 @@ function onMapComplete( success, error )
 	MapRenderer.onLoad();
 }
 
+var _pos = new Uint16Array(2);
 MapRenderer.onRender = function OnRender( tick, gl )
 {
 	var fog   = MapRenderer.fog;
@@ -189,6 +191,10 @@ MapRenderer.onRender = function OnRender( tick, gl )
 	var modelView, projection, normalMat;
 	var x, y;
 
+	Mouse.world.x =  -1;
+	Mouse.world.y =  -1;
+	Mouse.world.z =  -1;
+
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 	Camera.update( tick );
 
@@ -196,14 +202,44 @@ MapRenderer.onRender = function OnRender( tick, gl )
 	projection = Camera.projection;
 	normalMat  = Camera.normalMat;
 
-	// Spam map effects
 	// Effects.spam( Session.Entity.position, tick);
 
 	Ground.render(gl, modelView, projection, normalMat, fog, light );
 	Models.render(gl, modelView, projection, normalMat, fog, light );
 
+	if (Mouse.intersect && Altitude.intersect( modelView, projection, _pos)) {
+		x = _pos[0];
+		y = _pos[1];
+		const isWalkable = Altitude.getCellType( x, y ) & Altitude.TYPE.WALKABLE;
+
+		Mouse.world.x =  x;
+		Mouse.world.y =  y;
+		Mouse.world.z =  Altitude.getCellHeight( x, y );
+	}
+
+	Mouse.world.x =  -1;
+	// Display zone effects and entities
+	// Sky.render( gl, modelView, projection, fog, tick );
+	// EffectManager.render( gl, modelView, projection, fog, tick, true);
+
+	//Render Entities (no effects)
+	EntityManager.render( gl, modelView, projection, fog, false );
+
+	// Rendering water
 	// Water.render( gl, modelView, projection, fog, light, tick );
+
+	// Rendering effects
+	// Damage.render( gl, modelView, projection, fog, tick );
+	// EffectManager.render( gl, modelView, projection, fog, tick, false);
+	// EntityManager.render( gl, modelView, projection, fog, true );
+
+	// Play sounds
 	// Sounds.render( Session.Entity.position, tick );
+	if (Mouse.intersect) {
+		var entity = EntityManager.intersect();
+		EntityManager.setOverEntity( entity );
+	}
+	// Clean up
 	MemoryManager.clean(gl, tick);
 };
 

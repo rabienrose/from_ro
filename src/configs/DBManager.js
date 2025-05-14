@@ -1,5 +1,27 @@
 var DB={}
 
+
+DB.MapAlias = {
+	"new_1-1.rsw": "new_zone01.rsw",
+	"new_2-1.rsw": "new_zone01.rsw", 
+	"new_3-1.rsw": "new_zone01.rsw",
+	"new_4-1.rsw": "new_zone01.rsw",
+	"new_5-1.rsw": "new_zone01.rsw",
+	"new_1-2.rsw": "new_zone02.rsw",
+	"new_2-2.rsw": "new_zone02.rsw",
+	"new_3-2.rsw": "new_zone02.rsw", 
+	"new_4-2.rsw": "new_zone02.rsw",
+	"new_5-2.rsw": "new_zone02.rsw",
+	"new_1-3.rsw": "new_zone03.rsw",
+	"new_2-3.rsw": "new_zone03.rsw",
+	"new_3-3.rsw": "new_zone03.rsw",
+	"new_5-3.rsw": "new_zone03.rsw",
+	"new_1-4.rsw": "new_zone04.rsw",
+	"new_3-4.rsw": "new_zone04.rsw",
+	"new_4-4.rsw": "new_zone04.rsw",
+	"new_5-4.rsw": "new_zone04.rsw",
+}
+
 var JobId = {
 	NOVICE:                0,
 	SWORDMAN:              1,
@@ -24,6 +46,20 @@ var WeaponType={
 	ROD:                   10,
 	BOW:                   11,
 }
+
+var WeaponNameTable = {};
+WeaponNameTable[WeaponType.NONE]                  = "";
+WeaponNameTable[WeaponType.SHORTSWORD]            = "_\xb4\xdc\xb0\xcb";
+WeaponNameTable[WeaponType.SWORD]                 = "_\xb0\xcb";
+WeaponNameTable[WeaponType.TWOHANDSWORD]          = "_\xb0\xcb";
+WeaponNameTable[WeaponType.SPEAR]                 = "_\xc3\xa2";
+WeaponNameTable[WeaponType.TWOHANDSPEAR]          = "_\xc3\xa2";
+WeaponNameTable[WeaponType.AXE]                   = "_\xb5\xb5\xb3\xa2";
+WeaponNameTable[WeaponType.TWOHANDAXE]            = "_\xb5\xb5\xb3\xa2";
+WeaponNameTable[WeaponType.MACE]                  = "_\xc5\xac\xb7\xb4";
+WeaponNameTable[WeaponType.TWOHANDMACE]           = "_\xc5\xac\xb7\xb4";
+WeaponNameTable[WeaponType.ROD]                   = "_\xb7\xd4\xb5\xe5";
+WeaponNameTable[WeaponType.BOW]                   = "_\xc8\xb0";
 
 var JobHitSoundTable = {};
 JobHitSoundTable[JobId.NOVICE]           = ["player_clothes.wav"];
@@ -299,7 +335,7 @@ DB.getMap = function getMap(mapname) {
 };
 
 DB.isIndoor = function isIndoor(mapname) {
-	return mapname["isIndoor"];
+	return false;
 };
 
 DB.getWeaponAction = function getWeaponAction(id, job, sex) {
@@ -329,8 +365,6 @@ DB.getWeaponViewID = function getWeaponViewIdClosure() {
 		if (id < WeaponType.MAX) {
 			return id;
 		}
-
-		console.log("getWeaponViewID:", id);
 
 		// Based on view id
 		if (id in ItemTable) {
@@ -492,13 +526,7 @@ DB.getWeaponTrail = function getWeaponTrail(id, job, sex) {
 	}
 
 	return (
-		'/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/' +
-		baseClass +
-		'/' +
-		baseClass +
-		'_' +
-		SexTable[sex] +
-		WeaponTrailTable[id]
+		'/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/'+baseClass +'/'+baseClass +'_'+SexTable[sex]+WeaponTrailTable[id]
 	);
 };
 
@@ -520,6 +548,34 @@ DB.getShieldPath = function getShieldPath(id, job, sex) {
 	}
 
 	return '/resources/sprite/\xb9\xe6\xc6\xd0/' + baseClass + '/' + baseClass + '_' + SexTable[sex] + '_' + (ShieldTable[id] || ShieldTable[1]);
+};
+
+DB.getWeaponPath = function getWeaponPath(id, job, sex, leftid = false) {
+	if (id === 0) {
+		return null;
+	}
+
+	var baseClass = JobNameTable[job] || JobNameTable[0];
+
+	// ItemID to View Id
+	if ((id in ItemTable) && ('ClassNum' in ItemTable[id])) {
+		id = ItemTable[id].ClassNum;
+	}
+
+	if (leftid) {
+		if ((leftid in ItemTable) && ('ClassNum' in ItemTable[leftid])) {
+			leftid = ItemTable[leftid].ClassNum;
+		}
+
+		// Create dualhand Id
+		var right = Object.keys(WeaponType).find(key => WeaponType[key] === id);
+		var left = Object.keys(WeaponType).find(key => WeaponType[key] === leftid);
+		if (right && left) {
+			id = WeaponType[right + '_' + left];
+		}
+	}
+
+	return '/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/' + baseClass + '/' + baseClass + '_' + SexTable[sex] + (WeaponNameTable[id] || ('_' + id));
 };
 
 DB.getRobePath = function getRobePath(id, job, sex) {

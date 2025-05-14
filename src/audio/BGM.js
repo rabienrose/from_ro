@@ -1,4 +1,3 @@
-import jQuery from '../utils/jQuery.js';
 
 var BGM = {};
 

@@ -1,5 +1,6 @@
 import glMatrix from '../../utils/gl-matrix.js';
 import PathFinding from '../../utils/PathFinding.js';
+import Mouse from '../../control/MouseEventHandler.js';
 
 var Altitude = {};
 Altitude.width = 0;

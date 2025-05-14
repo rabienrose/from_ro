@@ -1,5 +1,5 @@
 import FileManager from './FileManager.js';
-
+import DB from '../configs/DBManager.js';
 var MapLoader={};
 
 MapLoader.fileCount = 0;
@@ -20,6 +20,9 @@ MapLoader.setProgress = function setProgress( percent ){
 };
 
 MapLoader.load = function Load( mapname ){
+	if (DB.MapAlias[mapname]) {
+		mapname = DB.MapAlias[mapname];
+	}
 	MapLoader.fileCount = 0;
 	MapLoader.offset = 0;
 	MapLoader.setProgress( 0 );
@@ -77,15 +80,20 @@ MapLoader.load = function Load( mapname ){
 		});
 		Promise.all(promises_water).then((res) => {
 			MapLoader.setProgress(4);
-			world.water.images      = res;
+			world.water.images = res;
 			MapLoader.MAP_WORLD(world.compile());
 		})
 		.then(() => {
-			return Promise.all(promises).then((res) => {
-				MapLoader.setProgress(4);
-				compiledGround.textures = res;
-				MapLoader.MAP_GROUND(compiledGround);
-			});
+			return Promise.all(promises).then(
+				(res) => {
+					MapLoader.setProgress(4);
+					compiledGround.textures = res;
+					MapLoader.MAP_GROUND(compiledGround);
+				}, 
+				(err) => {
+					console.log("Error: ", err);
+				}
+			);
 		})
 	})
 	.then(() => {
@@ -98,9 +106,14 @@ MapLoader.load = function Load( mapname ){
 				files.push(models[i].filename);
 			}
 		}
-		
 		var promises = files.map(filename => {
-			return FileManager.load(filename, {keep_name:true});
+			return FileManager.load(filename)
+			.then(result=>{
+				return {
+					filename:filename,
+					result:result
+				}
+			})
 		});
 		return Promise.all(promises).then((res) => {
 			MapLoader.setProgress(5);
@@ -204,9 +217,12 @@ MapLoader.mergeMeshes = function MergeMeshes( objects, bufferSize )
 	}
 	var promises = textures.map(filename => {
 		var promise = FileManager.load(filename)
-			.then(result=>{}
-				
-			)
+		.then(result=>{
+			return {
+				filename:filename,
+				result:result
+			}
+		})
 		return promise;
 	});
 	return Promise.all(promises).then((res) => {

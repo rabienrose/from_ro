@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import mysql from 'mysql2';
+import fs from 'fs';
+
 
 const app = express();
 const port = 8002;
@@ -13,33 +14,22 @@ app.post('/debug', express.json(), (req, res) => {
   console.log('[Client Debug]:', debugMsg);
   res.sendStatus(200);
 });
-
-// const db = mysql.createConnection({
-//   host: 'localhost',
-//   user: 'ragnarok', 
-//   password: 'La_009296',
-//   database: 'ragnarok'
-// });
-
-// db.connect((err) => {
-//   if (err) {
-//     console.error('Error connecting to MySQL:', err);
-//     return;
-//   }
-//   console.log('Connected to MySQL database');
-// });
-
-app.get('/query', (req, res) => {
-  const sql ='SHOW TABLES';
-  
-  db.query(sql, (err, results) => {
-    if (err) {
-      console.error('Error executing query:', err);
-      return res.status(500).json({error: 'Database query failed'});
-    }
-    res.json(results);
-  });
+// 设置静态文件目录
+app.use(express.static('data'));
+// 捕获所有请求，检查文件是否存在
+app.use((req, res, next) => {
+    const filePath = path.join(process.cwd(), 'public', req.path);
+    
+    fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+          console.log("file not exist: ", filePath);
+            res.status(404).send('404 Not Found');
+        } else {
+            res.sendFile(filePath);
+        }
+    });
 });
+
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

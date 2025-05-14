@@ -25,6 +25,9 @@
 		}
 		var img = new Image();
 		img.src = data;
+		img.addEventListener('error', () => {
+			console.error('Texture.js: src failed to load.');
+		});
 		img.onload = function OnLoadClosure(){
 			if (data.match(/^blob\:/)){
 				URL.revokeObjectURL(data);

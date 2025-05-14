@@ -2,7 +2,7 @@ import Network from './NetworkManager.js';
 import Session from '../utils/SessionStorage.js';
 import PACKET from './PacketStructure.js';
 import Sound from '../audio/SoundManager.js';
-import Entity from '../render/Entity/Entity.js';
+import Entity from '../render/entity/Entity.js';
 
 
 var Char={}
@@ -135,11 +135,12 @@ Char.onCreationFail = function( pkt )
   }
 }
 
-Char.onConnectRequest = function( slot_id )
+Char.onConnectRequest = function( entity )
 {
   Sound.play('click_sound.wav');
+  Session.Character = entity;
   var pkt = new PACKET.CH.SELECT_CHAR();
-  pkt.CharNum = slot_id;
+  pkt.CharNum = entity.CharNum;
   Network.sendPacket(pkt);
 }
 

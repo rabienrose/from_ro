@@ -1,7 +1,12 @@
 import glMatrix from '../utils/gl-matrix.js';
 import Preferences from '../configs/Preferences.js';
 import DB from '../configs/DBManager.js';
-
+import MapRenderer from './MapRenderer.js';
+import KEYS from '../control/KeyEventHandler.js';
+import Mouse from '../control/MouseEventHandler.js';
+import Session from '../utils/SessionStorage.js';
+import Events from '../utils/Events.js';
+import Renderer from './Renderer.js';
 
 var mat4        = glMatrix.mat4;
 var mat3        = glMatrix.mat3;
@@ -13,6 +18,8 @@ const C_MAX_ZOOM = 5;
 const C_MIN_V_ANGLE_ISOMETRIC = 190;
 const C_MAX_V_ANGLE_ISOMETRIC = 270;
 const C_THIRDPERSON_TRESHOLD_ZOOM = 1;
+const C_MIN_V_ANGLE_3RDPERSON = 175;
+const C_MAX_V_ANGLE_3RDPERSON = 270;
 const C_QUAKE_MULT = 0.1;
 
 var Camera = {};
@@ -113,7 +120,7 @@ Camera.processQuake = function processQuake( tick )
 
 Camera.init = function Init()
 {
-	Camera.enable3RDPerson = true;
+	Camera.enable3RDPerson = false;
 	Camera.enable1STPerson = false;
 	Camera.MAX_ZOOM = 5;
 	Camera.lastTick  = Date.now();
@@ -132,13 +139,13 @@ Camera.init = function Init()
 	} else {
 		Camera.MIN_ZOOM = C_MIN_ZOOM;
 	}
-	Camera.currentMap = 'cmd_fild03.gat';
+	Camera.currentMap = MapRenderer.currentMap;
 	if (DB.isIndoor(Camera.currentMap)) {
-		Camera.zoomFinal = Preferences.indoorZoom || 125;
+		Camera.zoomFinal = Preferences.Camera.indoorZoom || 125;
 		Camera.angleFinal[0] = 230;
 		Camera.angleFinal[1] = -40;
 	} else {
-		Camera.zoomFinal = Preferences.zoom || 125;
+		Camera.zoomFinal = Preferences.Camera.zoom || 125;
 	}
 };
 
@@ -148,11 +155,11 @@ Camera.save = function SaveClosure()
 	function save() {
 		_pending         = false;
 		if (!DB.isIndoor(Camera.currentMap)) {
-			Preferences.zoom = Camera.zoomFinal;
+			Preferences.Camera.zoom = Camera.zoomFinal;
 		}else{
-			Preferences.indoorZoom = Camera.zoomFinal;
+			Preferences.Camera.indoorZoom = Camera.zoomFinal;
 		}
-		Preferences.save();
+		Preferences.Camera.save();
 	}
 	return function saving() {
 		// Save camera settings after 3 seconds
@@ -266,6 +273,46 @@ Camera.setZoom = function SetZoom( delta )
 	}
 };
 
+Camera.updateState = function UpdateState(){
+	if(this.enable1STPerson && this.zoomFinal == 0){
+		if(this.state != this.states.first_person){
+			this.MIN_V_ANGLE = C_MIN_V_ANGLE_1STPERSON;
+			this.MAX_V_ANGLE = C_MAX_V_ANGLE_1STPERSON;
+			Renderer.vFov = 50;
+			Renderer.resize();
+			this.zoomStepMult = 0.3;
+			this.state = this.states.first_person;
+			if(Session.Entity){
+				Session.Entity.hideEntity = true;
+			}
+		}
+	} else if (this.enable3RDPerson &&  this.zoomFinal < (Math.abs(this.altitudeRange) * C_THIRDPERSON_TRESHOLD_ZOOM)){
+		if(this.state != this.states.third_person){
+			this.MIN_V_ANGLE = C_MIN_V_ANGLE_3RDPERSON;
+			this.MAX_V_ANGLE = C_MAX_V_ANGLE_3RDPERSON;
+			Renderer.vFov = 30;
+			Renderer.resize();
+			this.zoomStepMult = 0.3;
+			this.state = this.states.third_person;
+			if(Session.Entity){
+				Session.Entity.hideEntity = false;
+			}
+		}
+	} else {
+		if(this.state != this.states.isometric){
+			this.MIN_V_ANGLE = C_MIN_V_ANGLE_ISOMETRIC;
+			this.MAX_V_ANGLE = C_MAX_V_ANGLE_ISOMETRIC;
+			Renderer.vFov = 15;
+			Renderer.resize();
+			this.zoomStepMult = 1;
+			this.state = this.states.isometric;
+			if(Session.Entity){
+				Session.Entity.hideEntity = false;
+			}
+		}
+	}
+}
+
 Camera.update = function Update( tick )
 {
 	var lerp      = Math.min( (tick - Camera.lastTick) * 0.006, 1.0);
@@ -274,7 +321,7 @@ Camera.update = function Update( tick )
 		Camera.processMouseAction();
 	}
 	Camera.processQuake( tick );
-	if (Preferences.smooth && Camera.state != Camera.states.first_person) {
+	if (Preferences.Camera.smooth && Camera.state != Camera.states.first_person) {
 		Camera.position[0] += ( -Camera.target.position[0] - Camera.position[0] ) * lerp ;
 		Camera.position[1] += ( -Camera.target.position[1] - Camera.position[1] ) * lerp ;
 		Camera.position[2] += (  Camera.target.position[2] - Camera.position[2] ) * lerp ;
@@ -290,6 +337,7 @@ Camera.update = function Update( tick )
 	} else if (Camera.state == Camera.states.third_person && Camera.zoomFinal < (Math.abs(Camera.altitudeRange) * C_THIRDPERSON_TRESHOLD_ZOOM) ){
 		zOffset = 1.5;
 	}
+	// console.log(Camera.zoomFinal);
 	Camera.angle[0]    += ( Camera.angleFinal[0] - Camera.angle[0] ) * lerp * 2.0;
 	Camera.angle[1]    += ( Camera.angleFinal[1] - Camera.angle[1] ) * lerp * 2.0;
 	Camera.angle[0]    %=   360;
@@ -297,12 +345,6 @@ Camera.update = function Update( tick )
 	Camera.direction    = Math.floor( ( Camera.angle[1] + 22.5 ) / 45 ) % 8;
 	var matrix = Camera.modelView;
 	mat4.identity( matrix );
-	Camera.zoom=125;
-	Camera.angle[0]=230;
-	Camera.angle[1]=330;
-	Camera.position[0]=0;
-	Camera.position[1]=0;
-	Camera.position[2]=480;
 	mat4.translateZ( matrix, (Camera.altitudeFrom - Camera.zoom) / 2);
 	mat4.rotateX( matrix, matrix, Camera.angle[0] / 180 * Math.PI );
 	mat4.rotateY( matrix, matrix, Camera.angle[1] / 180 * Math.PI );

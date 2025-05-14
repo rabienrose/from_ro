@@ -2,8 +2,10 @@ import PACKET from './PacketStructure.js';
 import Network from './NetworkManager.js';
 import Session from '../utils/SessionStorage.js';
 import MapRenderer from '../render/MapRenderer.js';
-// import EntityManager from '../render/EntityManager.js';
+import EntityManager from '../render/EntityManager.js';
+import Entity from '../render/entity/Entity.js';
 import Camera from '../render/Camera.js';
+import MapControl from '../control/MapControl.js';
 
 var MapEngine = {};
 var _isInitialised=false;
@@ -12,7 +14,9 @@ MapEngine.init = function init()
 {
 	_mapName = Session.ServerChar.mapName;
 	var ip = Network.utilsLongToIP( Session.ServerChar.ip );
-	Network.connect(ip, Session.ServerChar.port, function onconnect( success ) {
+	Network.connect(ip, Session.ServerChar.port, function onconnect( success ) 
+	{
+		MapRenderer.currentMap = '';
 		if (!success) {
 			return;
 		}
@@ -35,7 +39,6 @@ MapEngine.init = function init()
 		ping = new PACKET.CZ.REQUEST_TIME();
 		var startTick = Date.now();
 		Network.setPing(function(){
-			console.log("map ping")
 			ping.clientTime = Date.now() - startTick;
 			if(!SP.returned && SP.pingTime)	{ console.warn('[Network] The server did not answer the previous PING!'); }
 			SP.pingTime = ping.clientTime;
@@ -47,6 +50,10 @@ MapEngine.init = function init()
 
 	if (!_isInitialised) {
 		_isInitialised = true;
+		MapControl.init();
+		MapControl.onRequestWalk     = onRequestWalk;
+		MapControl.onRequestStopWalk = onRequestStopWalk;
+		MapControl.onRequestDropItem = onDropItem;
 		// Hook packets
 		Network.hookPacket( PACKET.ZC.AID,                 onReceiveAccountID );
 		Network.hookPacket( PACKET.ZC.ACCEPT_ENTER2,       onConnectionAccepted );
@@ -56,6 +63,45 @@ MapEngine.init = function init()
 
 	}
 };
+
+
+function onDropItem( index, count )
+{
+	if (count) {
+		var pkt   = new PACKET.CZ.ITEM_THROW();
+		pkt.Index = index;
+		pkt.count = count;
+		Network.sendPacket(pkt);
+	}
+}
+
+function onRequestWalk()
+{
+	// Events.clearTimeout(_walkTimer);
+
+	// // If siting, update direction
+	// if (Session.Entity.action === Session.Entity.ACTION.SIT || KEYS.SHIFT) {
+	// 	Session.Entity.lookTo( Mouse.world.x, Mouse.world.y );
+
+	// 	var pkt;
+	// 	if(PACKETVER.value >= 20180307) {
+	// 		pkt = new PACKET.CZ.CHANGE_DIRECTION2();
+	// 	} else {
+	// 		pkt = new PACKET.CZ.CHANGE_DIRECTION();
+	// 	}
+	// 	pkt.headDir = Session.Entity.headDir;
+	// 	pkt.dir     = Session.Entity.direction;
+	// 	Network.sendPacket(pkt);
+	// 	return;
+	// }
+
+	// walkIntervalProcess();
+}
+
+function onRequestStopWalk()
+{
+	// Events.clearTimeout(_walkTimer);
+}
 
 function onPong( pkt )
 {
@@ -80,17 +126,38 @@ function onPlayerMove( pkt )
 
 function onConnectionAccepted( pkt )
 {
-	// Session.Entity = new Entity( Session.Character );
+	Session.Entity = new Entity( Session.Character );
 	// Session.Entity.onWalkEnd = onWalkEnd;
-	// if ('sex' in pkt && pkt.sex < 2) {
-	// 	Session.Entity.sex = pkt.sex;
-	// }
-	// Session.Entity.clevel = Session.Character.level;
-	// Session.mapState =  {
-	// 	property        : 0,
-	// 	type            : 0,
-	// 	flag            : 0,
-	// };
+
+	if ('sex' in pkt && pkt.sex < 2) {
+		Session.Entity.sex = pkt.sex;
+	}
+
+	// Reset
+	Session.petId         =     0;
+	Session.hasParty      = false;
+	Session.isPartyLeader = false;
+	Session.hasGuild      = false;
+	Session.guildRight    =     0;
+
+	Session.homunId       =     0;
+
+	Session.Entity.clevel = Session.Character.level;
+
+	Session.mapState =  {
+		property        : 0,
+		type            : 0,
+		flag            : 0,
+		isPVPZone       : false,
+		isAgitZone      : false,
+		isPVP           : false,
+		isGVG           : false,
+		isSiege         : false,
+		isNoLockOn      : false,
+		showPVPCounter  : false,
+		showBFCounter   : false,
+		isBattleField   : false,
+	};
 	onMapChange({
 		xPos:    pkt.PosDir[0],
 		yPos:    pkt.PosDir[1],
@@ -101,13 +168,13 @@ function onConnectionAccepted( pkt )
 function onMapChange( pkt )
 {
 	MapRenderer.onLoad = function(){
-		// Session.Entity.set({
-		// 	PosDir: [ pkt.xPos, pkt.yPos, 0 ],
-		// 	GID: Session.Character.GID
-		// });
-		// EntityManager.add( Session.Entity );
-		// Camera.setTarget( Session.Entity );
-		// Camera.init();
+		Session.Entity.set({
+			PosDir: [ pkt.xPos, pkt.yPos, 0 ],
+			GID: Session.Character.GID
+		});
+		EntityManager.add( Session.Entity );
+		Camera.setTarget( Session.Entity );
+		Camera.init();
 		Network.sendPacket(
 			new PACKET.CZ.NOTIFY_ACTORINIT()
 		);
@@ -122,7 +189,6 @@ function onReceiveAccountID( pkt )
 
 function onParameterChange( pkt )
 {
-	console.log(pkt);
 	return;
 	var amount = 0, type;
 

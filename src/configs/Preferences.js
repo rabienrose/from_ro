@@ -1,26 +1,34 @@
 
 var Storage = 
-	{
-		get: function Get( key, fn ){
-			var out = {};
-			out[key] = localStorage.getItem(key);
-			fn( out );
-		},
-		set: function Set( obj, fn ) {
-			var keys = Object.keys( obj );
-			var i, count;
+{
+	get: function Get( key, fn ){
+		var out = {};
+		out[key] = localStorage.getItem(key);
+		fn( out );
+	},
+	set: function Set( obj, fn ) {
+		var keys = Object.keys( obj );
+		var i, count;
 
-			for (i = 0, count = keys.length; i < count; ++i) {
-				localStorage.setItem( keys[i], obj[ keys[i] ] );
-			}
-
-			if (fn) {
-				fn();
-			}
+		for (i = 0, count = keys.length; i < count; ++i) {
+			localStorage.setItem( keys[i], obj[ keys[i] ] );
 		}
-	};
 
-function get( key, def, version )
+		if (fn) {
+			fn();
+		}
+	}
+};
+
+
+var Preferences = {}
+
+function selfSave()
+{
+	save( this );
+}
+
+var get = function get( key, def, version )
 {
 	Storage.get( key, function( value ){
 		var data, keys;
@@ -54,7 +62,7 @@ function get( key, def, version )
 	return def;
 }
 
-function save( data )
+var save = function save( data )
 {
 	var key = data._key;
 	delete data._key;
@@ -69,17 +77,12 @@ function save( data )
 	data.save  = selfSave;
 }
 
-function selfSave()
-{
-	save( this );
-}
-
-get( 'Camera', {
+Preferences.Camera = get( 'Camera', {
 	smooth:  true,
 	zoom:    125.0
 }, 1.1 );
 
-get( 'Map', {
+Preferences.Map = get( 'Map', {
 	fog: true,
 	lightmap: true,
 	effect: true,
@@ -89,7 +92,22 @@ get( 'Map', {
 	showname: true
 }, 1.1 );
 
-export default {
-	get:  get,
-	save: save
-};
+Preferences.Controls = get( 'Controls', {
+	noctrl:  true,
+	noshift: false,
+	snap: false,
+	itemsnap: false
+}, 1.1 );
+
+Preferences.Audio = get( 'Audio', {
+	BGM:   {
+		play:   true,
+		volume: 0.5
+	},
+	Sound: {
+		play:   true,
+		volume: 0.5
+	}
+}, 1.0 );
+
+export default Preferences

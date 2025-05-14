@@ -2,7 +2,7 @@ import Login from "./Login.js";
 import Char from "./Char.js";
 import Map from "./Map.js";
 import EntityManager from "../render/EntityManager.js";
-import Entity from "../render/Entity/Entity.js";
+import Entity from "../render/entity/Entity.js";
 import Renderer from "../render/Renderer.js";
 import Session from "../utils/SessionStorage.js";
 var AutoNewUser={}
@@ -29,7 +29,6 @@ AutoNewUser.start=function(){
     username = getRandomName(10);
     username=username+"_F"
   }
-  console.log(username);
   var password = 1;
 
   var char_in_map_cb=()=>{
@@ -53,18 +52,14 @@ AutoNewUser.start=function(){
 					repeat: true,
 					play: true
 				});
-        console.log(entity);
-        EntityManager.add(entity);
-        // Renderer.render(EntityManager.render);
-
-        // if (pkg.charInfo.length==0){
-        //   var random_name=getRandomName(10);
-        //   Char.onCreateSucc = create_succ_cb;
-        //   Char.charCreationRequest(random_name,0,0,0,0)
-        // }else{
-        //   Char.onInMap=char_in_map_cb;
-        //   Char.onConnectRequest(0);
-        // }
+        if (pkg.charInfo.length==0){
+          var random_name=getRandomName(10);
+          Char.onCreateSucc = create_succ_cb;
+          Char.charCreationRequest(random_name,0,0,0,0)
+        }else{
+          Char.onInMap=char_in_map_cb;
+          Char.onConnectRequest(entity);
+        }
       };
       Char.init();
     }else{

@@ -6,7 +6,7 @@ import Altitude from '../map/Altitude.js';
 import Session from '../../utils/SessionStorage.js';
 import JobId from '../../configs/DBManager.js';
 import glMatrix from '../../utils/gl-matrix.js';
-
+import FileManager from '../../network/FileManager.js';
 var _last_body_dir = 0;
 
 function render( modelView, projection )
@@ -24,13 +24,13 @@ function render( modelView, projection )
 	this.boundingRect.y2 =  Infinity;
 
 	// Render it only if visible
-	if (this.effectColor[3]) {
+	// if (this.effectColor[3]) {
 		this.renderEntity();
-		this.attachments.render(Renderer.tick);
-	}
+		// this.attachments.render(Renderer.tick);
+	// }
 
 	// Update character UI (life, dialog, etc.)
-	renderGUI( this, modelView, projection );
+	// renderGUI( this, modelView, projection );
 }
 
 var renderGUI = function renderGUIClosure()
@@ -161,6 +161,7 @@ var renderEntity = function renderEntityClosure()
 	return function renderEntity()
 	{
 		if(this.hideEntity) return;
+		
 
 		// Update shadow
 		SpriteRenderer.shadow = Ground.getShadowFactor( this.position[0], this.position[1] );
@@ -296,18 +297,19 @@ var renderElement = function renderElementClosure()
 		{
 			return;
 		}
-
+		
 		// Get back sprite and act
-		var spr = Client.loadFile(files.spr);
-		var act = Client.loadFile(files.act);
-
+		var spr = FileManager.read(files.spr);
+		var act = FileManager.read(files.act);
 		// Not loaded yet
 		if (!spr || !act) {
 			return;
 		}
 
+		
+
 		// If palette, load palette, else get back sprite palette
-		var pal = (files.pal && Client.loadFile(files.pal)) || spr;
+		var pal = (files.pal && FileManager.read(files.pal)) || spr;
 
 		// Obtain animations from the action and direction.
 		var action = act.actions[
@@ -377,14 +379,6 @@ var renderElement = function renderElementClosure()
 				_position[1] = -10;
 				break;
 				}
-		}
-
-		// Check if special body effect and enable the correct blend mode
-		if (type !== 'shadow' &&
-			entity.getOpt3(StatusConst.Status.BERSERK) ||
-			entity.getOpt3(StatusConst.Status.MARIONETTE)
-		) {
-			isBlendModeOne = true;
 		}
 
 		// Render all frames
@@ -564,10 +558,10 @@ function renderLayer( layer, spr, pal, size, pos, type, isBlendModeOne )
 
 	// copy color
 	if (type !== 'shadow') {
-		SpriteRenderer.color[0] = layer.color[0] * this.effectColor[0];
-		SpriteRenderer.color[1] = layer.color[1] * this.effectColor[1];
-		SpriteRenderer.color[2] = layer.color[2] * this.effectColor[2];
-		SpriteRenderer.color[3] = layer.color[3] * this.effectColor[3];
+		SpriteRenderer.color[0] = layer.color[0]// * this.effectColor[0];
+		SpriteRenderer.color[1] = layer.color[1] //* this.effectColor[1];
+		SpriteRenderer.color[2] = layer.color[2] //* this.effectColor[2];
+		SpriteRenderer.color[3] = layer.color[3] //* this.effectColor[3];
 	} else {
 		SpriteRenderer.color[0] = layer.color[0];
 		SpriteRenderer.color[1] = layer.color[1];

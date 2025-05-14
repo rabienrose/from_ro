@@ -28,7 +28,6 @@
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "gl-matrix": "^3.4.3",
-    "jquery": "^3.7.1"
+    "gl-matrix": "^3.4.3"
   }
 }

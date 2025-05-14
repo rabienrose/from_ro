@@ -91,7 +91,6 @@ Network.onMessage = function( buf )
 	var length = 0;
 	var offset = 0;
 	var buffer;
-
 	if (_save_buffer) {
 		var _data = new Uint8Array( _save_buffer.length + buf.byteLength );
 		_data.set( _save_buffer, 0 );
@@ -114,7 +113,7 @@ Network.onMessage = function( buf )
 		}
 
 		id = fp.readUShort();
-		console.log("0x" + id.toString(16));
+		
 		let packet_len = Packets.list[id]?Packets.list[id].size:fp.length - offset;
 		if (packet_len < 0) {
 			if (offset + 4 >= fp.length) {
@@ -129,11 +128,7 @@ Network.onMessage = function( buf )
 		offset += length;
 		if (offset > fp.length) {
 			offset = fp.tell() - (packet_len < 0 ? 4 : 2);
-			_save_buffer = new Uint8Array(
-				buffer,
-				offset,
-				fp.length - offset
-			);
+			_save_buffer = new Uint8Array(buffer,offset,fp.length - offset);
 			return;
 		}
 

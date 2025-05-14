@@ -3,14 +3,14 @@ var _rememberTime = 2 * 60 * 1000; // 2 min
 var _lastCheckTick = 0;
 var _cleanUpInterval = 30 * 1000;
 
+
 function get( filename )
 {
-	if (!_memory[filename]) {
-		return null;
-	}else{
+	if (_memory[filename]){
 		_memory[filename].lastTimeUsed = Date.now();
 		return _memory[filename].data;
 	}
+	return null;
 }
 
 function exist( filename )
@@ -18,7 +18,7 @@ function exist( filename )
 	return !!_memory[filename];
 }
 
-function set( filename, data, error )
+function set( filename, data )
 {
 	_memory[filename] = {
 		lastTimeUsed: Date.now(),
@@ -42,7 +42,7 @@ function clean( gl, now )
 
 	for (i = 0; i < count; ++i) {
 		item = _memory[ keys[i] ];
-		if (item.lastTimeUsed < tick) {
+		if (item && item.lastTimeUsed < tick) {
 			remove( gl, keys[i] );
 			list.push( keys[i] );
 		}
@@ -133,5 +133,6 @@ export default {
 	clean,
 	remove,
 	exist,
-	search
+	search,
+	_memory
 };

@@ -199,123 +199,123 @@ Entity.prototype.set = function Set( unit )
 	});
 
 	// Load shadow
-	// Client.loadFile(this.files.shadow.spr, null, null, {to_rgba:true});
-	// Client.loadFile(this.files.shadow.act);
+	FileManager.load(this.files.shadow.spr, {to_rgba:true});
+	FileManager.load(this.files.shadow.act);
 
 	this.isAdmin = Session.AdminList.indexOf(unit.GID) > -1;
 	this.sex     = unit.hasOwnProperty('sex') ? unit.sex : this._sex;
 	this.job     = unit.hasOwnProperty('job') ? unit.job : this._job;
-	// this.clothes = 0;
-	// keys         = Object.keys( unit );
-	// count        = keys.length;
-	// for (i = 0; i < count; ++i) {
-	// 	switch (keys[i]) {
+	this.clothes = 0;
+	keys         = Object.keys( unit );
+	count        = keys.length;
+	for (i = 0; i < count; ++i) {
+		switch (keys[i]) {
 
-	// 		// Server send warp as npc,
-	// 		// roBrowser has a special type for warp.
-	// 		case 'objecttype':
-	// 			this.objecttype = (unit.job === 45) ? Entity.TYPE_WARP : unit.objecttype;
-	// 			require('./EntityAction').call(this);
-	// 			break;
+			// Server send warp as npc,
+			// roBrowser has a special type for warp.
+			case 'objecttype':
+				this.objecttype = (unit.job === 45) ? Entity.TYPE_WARP : unit.objecttype;
+				EntityAction.call(this);
+				break;
 
-	// 		// Already set
-	// 		case 'sex':
-	// 		case 'job':
-	// 			break;
+			// Already set
+			case 'sex':
+			case 'job':
+				break;
 
-	// 		// Not used ?
-	// 		case 'xSize':
-	// 		case 'ySize':
-	// 			break;
+			// Not used ?
+			case 'xSize':
+			case 'ySize':
+				break;
 
-	// 		case 'PosDir':
-	// 			this.direction   = ([ 4, 3, 2, 1, 0, 7, 6, 5 ])[(unit.PosDir[2]+8)%8];
-	// 			this.position[0] = unit.PosDir[0];
-	// 			this.position[1] = unit.PosDir[1];
-	// 			this.position[2] = Altitude.getCellHeight(  unit.PosDir[0],  unit.PosDir[1] ) + (this.objecttype === Entity.TYPE_FALCON ? 5 : 0);
-	// 			break;
+			case 'PosDir':
+				this.direction   = ([ 4, 3, 2, 1, 0, 7, 6, 5 ])[(unit.PosDir[2]+8)%8];
+				this.position[0] = unit.PosDir[0];
+				this.position[1] = unit.PosDir[1];
+				this.position[2] = Altitude.getCellHeight(  unit.PosDir[0],  unit.PosDir[1] ) + (this.objecttype === Entity.TYPE_FALCON ? 5 : 0);
+				break;
 
-	// 		case 'state':
-	// 			var actions = [ this.ACTION.IDLE, this.ACTION.DIE, this.ACTION.SIT ];
-	// 			this.setAction({
-	// 				action: actions[unit.state],
-	// 				frame:  0,
-	// 				play:  true,
-	// 				repeat: unit.state !== 1
-	// 			});
-	// 			break;
+			case 'state':
+				var actions = [ this.ACTION.IDLE, this.ACTION.DIE, this.ACTION.SIT ];
+				this.setAction({
+					action: actions[unit.state],
+					frame:  0,
+					play:  true,
+					repeat: unit.state !== 1
+				});
+				break;
 
-	// 		case 'action':
-	// 			this.setAction({
-	// 				action:unit.action,
-	// 				play:true,
-	// 				frame:0,
-	// 				repeat: unit.action !== 1
-	// 			});
-	// 			break;
+			case 'action':
+				this.setAction({
+					action:unit.action,
+					play:true,
+					frame:0,
+					repeat: unit.action !== 1
+				});
+				break;
 
-	// 		case 'actStartTime':
-	// 			this.animation.tick = unit.actStartTime;
-	// 			break;
+			case 'actStartTime':
+				this.animation.tick = unit.actStartTime;
+				break;
 
-	// 		case 'speed':
-	// 			this.walk.speed = unit.speed;
-	// 			break;
+			case 'speed':
+				this.walk.speed = unit.speed;
+				break;
 
-	// 		case 'moveStartTime':
-	// 			this.walk.tick = +Renderer.tick;
-	// 			break;
+			case 'moveStartTime':
+				this.walk.tick = +Renderer.tick;
+				break;
 
-	// 		case 'name':
-	// 			this.display.name = unit.name;
-	// 			if( this.display.name.length == 0 ){ this.display.load = this.display.TYPE.NONE };
-	// 			this.display.update(
-	// 				this.objecttype === Entity.TYPE_MOB ? this.display.STYLE.MOB :
-	// 				this.objecttype === Entity.TYPE_NPC_ABR ? this.display.STYLE.MOB :
-	// 				this.objecttype === Entity.TYPE_NPC_BIONIC ? this.display.STYLE.MOB :
-	// 				this.objecttype === Entity.TYPE_DISGUISED ? this.display.STYLE.MOB :
-	// 				this.objecttype === Entity.TYPE_NPC ? this.display.STYLE.NPC :
-	// 				this.objecttype === Entity.TYPE_NPC2 ? this.display.STYLE.NPC :
-	// 				this.display.STYLE.DEFAULT
-	// 			);
-	// 			break;
+			case 'name':
+				// this.display.name = unit.name;
+				// if( this.display.name.length == 0 ){ this.display.load = this.display.TYPE.NONE };
+				// this.display.update(
+				// 	this.objecttype === Entity.TYPE_MOB ? this.display.STYLE.MOB :
+				// 	this.objecttype === Entity.TYPE_NPC_ABR ? this.display.STYLE.MOB :
+				// 	this.objecttype === Entity.TYPE_NPC_BIONIC ? this.display.STYLE.MOB :
+				// 	this.objecttype === Entity.TYPE_DISGUISED ? this.display.STYLE.MOB :
+				// 	this.objecttype === Entity.TYPE_NPC ? this.display.STYLE.NPC :
+				// 	this.objecttype === Entity.TYPE_NPC2 ? this.display.STYLE.NPC :
+				// 	this.display.STYLE.DEFAULT
+				// );
+				break;
 
-	// 		case 'MoveData':
-	// 			this.position[0] = unit.MoveData[0];
-	// 			this.position[1] = unit.MoveData[1];
-	// 			this.position[2] = Altitude.getCellHeight(  unit.MoveData[0],  unit.MoveData[1] );
-	// 			this.walkTo.apply( this, [unit.MoveData[0], unit.MoveData[1], unit.MoveData[2], unit.MoveData[3]] );
-	// 			break;
+			case 'MoveData':
+				this.position[0] = unit.MoveData[0];
+				this.position[1] = unit.MoveData[1];
+				this.position[2] = Altitude.getCellHeight(  unit.MoveData[0],  unit.MoveData[1] );
+				// this.walkTo.apply( this, [unit.MoveData[0], unit.MoveData[1], unit.MoveData[2], unit.MoveData[3]] );
+				break;
 
-	// 		case 'accessory':
-	// 			this.accessory = unit.accessory;
-	// 			break;
+			case 'accessory':
+				this.accessory = unit.accessory;
+				break;
 
-	// 		case 'accessory2':
-	// 			this.accessory2 = unit.accessory2;
-	// 			break;
+			case 'accessory2':
+				this.accessory2 = unit.accessory2;
+				break;
 
-	// 		case 'accessory3':
-	// 			this.accessory3 = unit.accessory3;
-	// 			break;
+			case 'accessory3':
+				this.accessory3 = unit.accessory3;
+				break;
 
-	// 		case 'Robe':
-	// 			this.robe = unit.Robe;
-	// 			break;
+			case 'Robe':
+				this.robe = unit.Robe;
+				break;
 
-	// 		case 'hideShadow':
-	// 			this.hideShadow = unit.hideShadow;
+			case 'hideShadow':
+				this.hideShadow = unit.hideShadow;
 
-	// 		default:
-	// 			if (Entity.prototype.hasOwnProperty(keys[i]) || Entity.prototype.hasOwnProperty('_' + keys[i])) {
+			default:
+				if (Entity.prototype.hasOwnProperty(keys[i]) || Entity.prototype.hasOwnProperty('_' + keys[i])) {
 					
-	// 				this[keys[i]] = unit[keys[i]];
-	// 			}
-	// 			break;
-	// 	}
-	// }
+					this[keys[i]] = unit[keys[i]];
+				}
+				break;
+		}
+	}
 
-	// // Rendering life
+	// Rendering life
 	// if (this.life.hp > -1 && this.life.hp_max > -1) {
 	// 	this.life.update();
 	// 	this.life.display = true;

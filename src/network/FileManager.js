@@ -14,6 +14,7 @@ import Texture from '../utils/Texture.js';
 var FileManager = {};
 FileManager.remoteClient = '';
 FileManager.filesAlias = {};
+var _onload_promise = {};
 
 FileManager.get = function GetHTTP( filename )
 {
@@ -27,22 +28,26 @@ FileManager.get = function GetHTTP( filename )
 	return fetch(url)
 		.then(response => {
 			if (!response.ok) {
-				throw new Error('Network response was not ok');
+				console.log("%cfile not found: ", "color: red", filename	);
 			}
 			return response.arrayBuffer();
 		})
-		.catch(error => {
-			console.error('Can\'t get file:', error);
-		});
 };
+
+FileManager.read = function Read( filename ){
+	return Memory.get(filename);
+}
 
 FileManager.load = function Load( filename, args )
 {
-	var result=Memory.get(filename);
-	if (result) {
-		return Promise.resolve(result);
+	if (Memory.get(filename)){
+		return Promise.resolve(Memory.get(filename));
 	}
-	return this.get(filename)
+	if (_onload_promise[filename]) {
+		return _onload_promise[filename];
+	}
+	// console.log("load3: ",filename);
+	var promise = this.get(filename)
 		.then(buffer => {
 			var ext    = filename.match(/.[^\.]+$/).toString().substr(1).toLowerCase();
 			var result = null;
@@ -65,6 +70,7 @@ FileManager.load = function Load( filename, args )
 					result = URL.createObjectURL(
 						new Blob( [buffer], { type: 'image/' + ext })
 					);
+					Memory.set(filename, result);
 					break;
 				case 'wav':
 				case 'mp3':
@@ -76,10 +82,11 @@ FileManager.load = function Load( filename, args )
 						break;
 					}
 					result = buffer;
+					Memory.set(filename, result);
 					break;
-
 				case 'tga':
 					result = buffer;
+					Memory.set(filename, result);
 					break;
 				case 'txt':
 				case 'xml':
@@ -95,8 +102,8 @@ FileManager.load = function Load( filename, args )
 						}
 						str += String.fromCharCode( uint8[i] );
 					}
-
 					result = str;
+					Memory.set(filename, result);
 					break;
 				case 'spr':
 					var spr = new Sprite(buffer);
@@ -125,33 +132,39 @@ FileManager.load = function Load( filename, args )
 						gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 						gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 					}
+					Memory.set(filename, result);
 					break;
 				case 'rsw':
 					result = new World(buffer);
+					Memory.set(filename, result);
 					break;
 
 				case 'gnd':
 					result = new Ground(buffer);
+					Memory.set(filename, result);
 					break;
 
 				case 'gat':
 					result = new Altitude(buffer);
+					Memory.set(filename, result);
 					break;
 
 				case 'rsm':
 				case 'rsm2':
 					result = new Model(buffer);
+					Memory.set(filename, result);
 					break;
 
 				case 'act':
 					result = new Action(buffer).compile();
+					Memory.set(filename, result);
 					break;
 
 				case 'str':
-					result = new Str(buffer, args?.texturePath ?? '');
-					var layers = result.layers;
+					var str = new Str(buffer, args?.texturePath ?? '');
+					var layers = str.layers;
 					var promises_all=[];
-					for (let i = 0; i < result.layernum; ++i) {
+					for (let i = 0; i < str.layernum; ++i) {
 						layers[i].materials = new Array(layers[i].texcnt);
 						for (let j = 0; j < layers[i].texcnt; ++j) {
 							var promise =	FileManager.load(layers[i].texname[j])
@@ -161,7 +174,11 @@ FileManager.load = function Load( filename, args )
 							promises_all.push(promise);
 						}
 					}
-					result = Promise.all(promises_all);
+					result = Promise.all(promises_all)
+						.then(()=>{
+							Memory.set(filename, str);
+							return str;
+						});
 					break;
 				case 'pal':
 					var gl      = Renderer.getContext();
@@ -173,13 +190,17 @@ FileManager.load = function Load( filename, args )
 					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 					gl.generateMipmap( gl.TEXTURE_2D );
 					result = { palette:palette, texture:texture };
+					Memory.set(filename, result);
 					break;
 				default:
 					result = buffer;
+					Memory.set(filename, result);
 					break;
 			}
 			return result;
 		})
+	_onload_promise[filename] = promise;
+	return promise;
 };
 
 export default FileManager;

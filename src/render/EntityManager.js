@@ -1,5 +1,7 @@
-import Entity from "./Entity/Entity.js";
+import Entity from "./entity/Entity.js";
 import SpriteRenderer from "./SpriteRenderer.js";
+import KEYS from "../control/KeyEventHandler.js";
+import Mouse from "../control/MouseEventHandler.js";
 
 var _list = [];
 
@@ -77,6 +79,28 @@ function removeEntity(gid) {
 	}
 }
 
+var _over = null;
+function getOverEntity() {
+	return _over;
+}
+var _saveShift = false;
+function setOverEntity(target) {
+	var current = _over;
+	if (target === current && _saveShift === KEYS.SHIFT) {
+		return;
+	}
+	_saveShift = KEYS.SHIFT;
+	if (current) {
+		current.onMouseOut();
+	}
+	if (target) {
+		_over = target;
+		target.onMouseOver();
+	} else {
+		_over = null;
+	}
+}
+
 var _focus = null;
 function getFocusEntity() {
 	return _focus;
@@ -127,7 +151,7 @@ function render(gl, modelView, projection, fog, renderEffects) {
 
 	// Use program
 	SpriteRenderer.bind3DContext(gl, modelView, projection, fog);
-
+	
 	// Rendering
 	for (i = 0, count = _list.length; i < count; ++i) {
 		if ((_list[i].objecttype != _list[i].constructor.TYPE_EFFECT && !renderEffects) || (_list[i].objecttype == _list[i].constructor.TYPE_EFFECT && renderEffects)) {
@@ -232,6 +256,9 @@ var EntityManager = {
 
 	getFocusEntity: getFocusEntity,
 	setFocusEntity: setFocusEntity,
+
+	getOverEntity: getOverEntity,
+	setOverEntity: setOverEntity,
 
 	getClosestEntity: getClosestEntity,
 

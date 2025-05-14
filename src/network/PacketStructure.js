@@ -372,4 +372,227 @@ PACKET.CZ.NOTIFY_ACTORINIT.prototype.build = function() {
 	return pkt_buf;
 };
 
+// 0x201
+PACKET.ZC.FRIENDS_LIST = function PACKET_ZC_FRIENDS_LIST(fp, end) {
+	this.friendList = (function() {
+		var i, count=(end-fp.tell())/32|0, out=new Array(count);
+		for (i = 0; i < count; ++i) {
+			out[i] = {};
+			out[i].AID = fp.readULong();
+			out[i].GID = fp.readULong();
+			out[i].Name = fp.readString(NAME_LENGTH);
+		}
+		return out;
+	})();
+};
+PACKET.ZC.FRIENDS_LIST.size = -1;
+
+// 0x141
+PACKET.ZC.COUPLESTATUS = function PACKET_ZC_COUPLESTATUS(fp, end) {
+	this.statusType = fp.readULong();
+	this.defaultStatus = fp.readLong();
+	this.plusStatus = fp.readLong();
+};
+PACKET.ZC.COUPLESTATUS.size = 14;
+
+// 0x1d7
+// value2 seems to be used only when LOOK_WEAPON as a Shield
+PACKET.ZC.SPRITE_CHANGE2 = function PACKET_ZC_SPRITE_CHANGE2(fp, end) {
+	this.GID = fp.readULong();
+	this.type = fp.readUChar();
+	this.value = fp.readShort();
+	this.value2 = fp.readShort();
+};
+PACKET.ZC.SPRITE_CHANGE2.size = 11;
+
+// 0x8e
+PACKET.ZC.NOTIFY_PLAYERCHAT = function PACKET_ZC_NOTIFY_PLAYERCHAT(fp, end) {
+	this.msg = fp.readString(end - fp.tell());
+};
+PACKET.ZC.NOTIFY_PLAYERCHAT.size = -1;
+
+// 0x13a
+PACKET.ZC.ATTACK_RANGE = function PACKET_ZC_ATTACK_RANGE(fp, end) {
+	this.currentAttRange = fp.readShort();
+};
+PACKET.ZC.ATTACK_RANGE.size = 4;
+
+// 0x91
+PACKET.ZC.NPCACK_MAPMOVE = function PACKET_ZC_NPCACK_MAPMOVE(fp, end) {
+	this.mapName = fp.readBinaryString(16);
+	this.xPos = fp.readShort();
+	this.yPos = fp.readShort();
+};
+PACKET.ZC.NPCACK_MAPMOVE.size = 22;
+
+// 0x992
+PACKET.ZC.EQUIPMENT_ITEMLIST4 = function PACKET_ZC_EQUIPMENT_ITEMLIST4(fp, end) {
+	this.ItemInfo = (function() {
+		var i, count = (end - fp.tell()) / 31 | 0,
+			out = new Array(count);
+		var flag;
+		for (i = 0; i < count; ++i) {
+			out[i] = {};
+			out[i].index = fp.readShort();
+			out[i].ITID = fp.readUShort();
+			out[i].type = fp.readUChar();
+			out[i].location = fp.readULong();
+			out[i].WearState = fp.readULong();
+			out[i].RefiningLevel = fp.readUChar();
+			out[i].slot = {};
+			out[i].slot.card1 = fp.readUShort();
+			out[i].slot.card2 = fp.readUShort();
+			out[i].slot.card3 = fp.readUShort();
+			out[i].slot.card4 = fp.readUShort();
+			out[i].HireExpireDate = fp.readLong();
+			out[i].bindOnEquipType = fp.readUShort();
+			out[i].wItemSpriteNumber = fp.readUShort();
+			flag = fp.readUChar();
+			out[i].IsIdentified = flag & 1;
+			out[i].IsDamaged = flag & 2;
+			out[i].PlaceETCTab = flag & 4;
+		}
+		return out;
+	})();
+};
+PACKET.ZC.EQUIPMENT_ITEMLIST4.size = -1;
+
+// 0x99b
+PACKET.ZC.MAPPROPERTY_R2 = function PACKET_ZC_MAPPROPERTY_R2(fp, end) {
+	this.type = fp.readShort();
+	this.flag = fp.readLong();
+};
+PACKET.ZC.MAPPROPERTY_R2.size = 8;
+
+// 0x9dd
+PACKET.ZC.NOTIFY_NEWENTRY8 = function PACKET_ZC_NOTIFY_NEWENTRY8(fp, end) {
+	this.objecttype = fp.readUChar();
+	this.GID = fp.readULong();
+	this.AID = fp.readULong();
+	this.speed = fp.readShort();
+	this.bodyState = fp.readShort();
+	this.healthState = fp.readShort();
+	this.effectState = fp.readLong();
+	this.job = fp.readShort();
+	this.head = fp.readShort();
+	this.weapon = fp.readLong();
+	this.accessory = fp.readShort();
+	this.accessory2 = fp.readShort();
+	this.accessory3 = fp.readShort();
+	this.headpalette = fp.readShort();
+	this.bodypalette = fp.readShort();
+	this.headDir = fp.readShort();
+	this.Robe = fp.readShort();
+	this.GUID = fp.readULong();
+	this.GEmblemVer = fp.readShort();
+	this.honor = fp.readShort();
+	this.virtue = fp.readLong();
+	this.isPKModeON = fp.readUChar();
+	this.sex = fp.readUChar();
+	this.PosDir = fp.readPos();
+	this.xSize = fp.readUChar();
+	this.ySize = fp.readUChar();
+	this.state = fp.readUChar();
+	this.clevel = fp.readShort();
+	this.font = fp.readShort();
+	this.hp = fp.readLong();
+	this.maxhp = fp.readLong();
+	this.isBoss = fp.readUChar();
+	this.name = fp.readString(end - fp.tell());
+};
+PACKET.ZC.NOTIFY_NEWENTRY8.size = -1;
+
+// 0x10f
+PACKET.ZC.SKILLINFO_LIST = function PACKET_ZC_SKILLINFO_LIST(fp, end) {
+	this.skillList = (function() {
+		var i, count=(end-fp.tell())/37|0, out=new Array(count);
+		for (i = 0; i < count; ++i) {
+			out[i] = {};
+			out[i].SKID = fp.readShort();
+			out[i].type = fp.readLong();
+			out[i].level = fp.readShort();
+			out[i].spcost = fp.readShort();
+			out[i].attackRange = fp.readShort();
+			out[i].skillName = fp.readBinaryString(NAME_LENGTH);
+			out[i].upgradable = fp.readChar();
+		}
+		return out;
+	})();
+};
+PACKET.ZC.SKILLINFO_LIST.size = -1;
+
+// 0x7d9
+PACKET.ZC.SHORTCUT_KEY_LIST_V2 = function PACKET_ZC_SHORTCUT_KEY_LIST_V2(fp, end) {
+	this.ShortCutKey = (function() {
+		var i, count = 38,
+			out = new Array(count);
+		for (i = 0; i < count; ++i) {
+			out[i] = {};
+			out[i].isSkill = fp.readChar();
+			out[i].ID = fp.readULong();
+			out[i].count = fp.readShort();
+		}
+		return out;
+	})();
+};
+PACKET.ZC.SHORTCUT_KEY_LIST_V2.size = 268;
+
+// 0xb1
+PACKET.ZC.LONGPAR_CHANGE = function PACKET_ZC_LONGPAR_CHANGE(fp, end) {
+	this.varID = fp.readUShort();
+	this.amount = fp.readLong();
+};
+PACKET.ZC.LONGPAR_CHANGE.size = 8;
+
+// 0xbd
+PACKET.ZC.STATUS = function PACKET_ZC_STATUS(fp, end) {
+	this.point = fp.readShort();
+	this.str = fp.readUChar();
+	this.standardStr = fp.readUChar();
+	this.agi = fp.readUChar();
+	this.standardAgi = fp.readUChar();
+	this.vit = fp.readUChar();
+	this.standardVit = fp.readUChar();
+	this.Int = fp.readUChar();
+	this.standardInt = fp.readUChar();
+	this.dex = fp.readUChar();
+	this.standardDex = fp.readUChar();
+	this.luk = fp.readUChar();
+	this.standardLuk = fp.readUChar();
+	this.attPower = fp.readShort();
+	this.refiningPower = fp.readShort();
+	this.max_mattPower = fp.readShort();
+	this.min_mattPower = fp.readShort();
+	this.itemdefPower = fp.readShort();
+	this.plusdefPower = fp.readShort();
+	this.mdefPower = fp.readShort();
+	this.plusmdefPower = fp.readShort();
+	this.hitSuccessValue = fp.readShort();
+	this.avoidSuccessValue = fp.readShort();
+	this.plusAvoidSuccessValue = fp.readShort();
+	this.criticalSuccessValue = fp.readShort();
+	this.ASPD = fp.readShort();
+	this.plusASPD = fp.readShort();
+};
+PACKET.ZC.STATUS.size = 44;
+
+// 0x2c9
+PACKET.ZC.PARTY_CONFIG = function PACKET_ZC_PARTY_CONFIG(fp, end) {
+	this.bRefuseJoinMsg = fp.readUChar();
+};
+PACKET.ZC.PARTY_CONFIG.size = 3;
+
+// 0x2da
+PACKET.ZC.CONFIG_NOTIFY = function PACKET_ZC_CONFIG_NOTIFY(fp, end) {
+	this.show_eq_flag = fp.readUChar();
+};
+PACKET.ZC.CONFIG_NOTIFY.size = 3;
+
+// 0x2d9
+PACKET.ZC.CONFIG = function PACKET_ZC_CONFIG(fp, end) {
+	this.Config = fp.readLong();
+	this.Value = fp.readLong();
+};
+PACKET.ZC.CONFIG.size = 10;
+
 export default PACKET;

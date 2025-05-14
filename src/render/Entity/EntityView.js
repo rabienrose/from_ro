@@ -1,6 +1,7 @@
 import DB from '../../configs/DBManager.js';
 import EntityAction from './EntityAction.js';
 import FileManager from '../../network/FileManager.js';
+import Entity from './Entity.js';
 
 function ViewFiles( spr, act, pal )
 {
@@ -21,7 +22,7 @@ function View()
 	this.accessory2 = new ViewFiles();
 	this.accessory3 = new ViewFiles();
 	this.robe       = new ViewFiles();
-	this.shadow     = new ViewFiles('sprite/shadow.spr', 'sprite/shadow.act');
+	this.shadow     = new ViewFiles('/resources/sprite/shadow.spr', '/resources/sprite/shadow.act');
 }
 
 function UpdateSex( sex )
@@ -101,8 +102,6 @@ function UpdateBody( job )
 	this.weapon      = this._weapon;
 	this.shield      = this._shield;
 
-	console.log(this.files);
-
 	FileManager.load(this.files.body.act);
 	FileManager.load(this.files.body.spr);
 	
@@ -136,20 +135,10 @@ function UpdateHead( head)
 
 	this._head  = head;
 	path        = DB.getHeadPath( head, this.job, this._sex, this.isOrcish);
-
-	var p_act = FileManager.load(path + '.act')
-		.then(act=>{
-			this.files.head.act = act;
-		});
-	var p_spr = FileManager.load(path + '.spr', {to_rgba: this.objecttype !== Entity.TYPE_PC})
-		.then(spr=>{
-			this.files.head.spr = spr;
-		});
-	Promise.all([p_act, p_spr])
-		.then(()=>{
-			this.files.head.pal = null;
-			this.headpalette    = this._headpalette;
-		});
+	this.files.head.act = path + '.act';
+	this.files.head.spr = path + '.spr';
+	FileManager.load(this.files.head.act)
+	FileManager.load(this.files.head.spr, {to_rgba: this.objecttype !== Entity.TYPE_PC})
 }
 
 function UpdateHeadPalette( pal )

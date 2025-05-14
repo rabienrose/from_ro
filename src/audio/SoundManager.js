@@ -106,8 +106,8 @@ SoundManager.setVolume = function setVolume( volume )
 {
 	this.volume  = Math.min( volume, 1.0);
 
-	Preferences.Sound.volume = this.volume;
-	Preferences.save();
+	Preferences.Audio.Sound.volume = this.volume;
+	Preferences.Audio.save();
 	
 	Object.keys(_sounds).forEach(key => {
 		_sounds[key].instances.forEach(sound => {
