@@ -204,6 +204,13 @@ MonsterNameTable[1007] = "Fabre";
 MonsterNameTable[1008] = "Pupa";
 MonsterNameTable[1009] = "Condor";
 MonsterNameTable[1010] = "Willow";
+MonsterNameTable[727] = "4_F_JOB_HUNTER";
+
+var MonsterTable = {};
+MonsterTable[46] = "1_ETC_01";
+MonsterTable[86] = "4_M_04";
+MonsterTable[105] = "8W_SOLDIER";
+MonsterTable[727] = "4_F_JOB_HUNTER";
 
 DB.ShadowTable = {};
 DB.ShadowTable[111]  = 0.0;
@@ -458,24 +465,25 @@ DB.getBodyPath = function getBodyPath(id, sex, alternative) {
 
 	// NPC
 	if (isNPC(id)) {
-		return '/resources/sprite/npc/' + (MonsterNameTable[id] || MonsterNameTable[46]).toLowerCase();
+		console.log("isNPC: ",id);
+		return '/resources/sprite/npc/' + (MonsterTable[id] || MonsterTable[46]).toLowerCase();
 	}
 
 	// MERC
 	if (isMercenary(id)) {
 		// archer - female path | lancer and swordman - male path
 		// mercenary entry on monster table have sex path included
-		return '/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/\xb8\xf6\xc5\xeb/' + MonsterNameTable[id];
+		return '/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/\xb8\xf6\xc5\xeb/' + MonsterTable[id];
 	}
 
 	// HOMUN
 	if (isHomunculus(id)) {
-		return '/resources/sprite/homun/' + (MonsterNameTable[id] || MonsterNameTable[1002]).toLowerCase();
+		return '/resources/sprite/homun/' + (MonsterTable[id] || MonsterTable[1002]).toLowerCase();
 	}
 
 
 	// MONSTER
-	return '/resources/sprite/\xb8\xf3\xbd\xba\xc5\xcd/' + (MonsterNameTable[id] || MonsterNameTable[1001]).toLowerCase();
+	return '/resources/sprite/\xb8\xf3\xbd\xba\xc5\xcd/' + (MonsterTable[id] || MonsterTable[1001]).toLowerCase();
 };
 
 DB.getBodyPalPath = function getBodyPalettePath(id, pal, sex) {

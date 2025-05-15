@@ -12,7 +12,6 @@ import KEYS from "./KeyEventHandler";
 import Altitude from "../render/map/Altitude";
 import Session from "../utils/SessionStorage";
 
-
 var _rightClickPosition = new Int16Array(2);
 
 var MapControl = {};
@@ -160,31 +159,6 @@ function onDrop( event )
 	return false;
 }
 
-function onAutoFollow(){
-	if(Session.autoFollow){
-		var player = Session.Entity;
-		var target = Session.autoFollowTarget;
-
-		var dx = Math.abs(player.position[0] - target.position[0]);
-		var dy = Math.abs(player.position[1] - target.position[1]);
-
-		// Use square based range check instead of Pythagorean because of diagonals
-		if( dx>1 || dy>1 ){
-			var dest = [0,0];
-
-			// If there is valid cell send move packet
-			if (checkFreeCell(Math.round(target.position[0]), Math.round(target.position[1]), 1, dest)) {
-				var pkt;
-				pkt         = new PACKET.CZ.REQUEST_MOVE();
-				pkt.dest = dest;
-				Network.sendPacket(pkt);
-			}
-		}
-
-		Events.setTimeout( onAutoFollow, 500);
-	}
-}
-
 function checkFreeCell(x, y, range, out)
 {
 	var _x, _y, r;
@@ -229,6 +203,31 @@ function isFreeCell(x, y)
 	});
 
 	return free;
+}
+
+function onAutoFollow(){
+	if(Session.autoFollow){
+		var player = Session.Entity;
+		var target = Session.autoFollowTarget;
+
+		var dx = Math.abs(player.position[0] - target.position[0]);
+		var dy = Math.abs(player.position[1] - target.position[1]);
+
+		// Use square based range check instead of Pythagorean because of diagonals
+		if( dx>1 || dy>1 ){
+			var dest = [0,0];
+
+			// If there is valid cell send move packet
+			if (checkFreeCell(Math.round(target.position[0]), Math.round(target.position[1]), 1, dest)) {
+				var pkt;
+				pkt         = new PACKET.CZ.REQUEST_MOVE();
+				pkt.dest = dest;
+				Network.sendPacket(pkt);
+			}
+		}
+
+		Events.setTimeout( onAutoFollow, 500);
+	}
 }
 
 export default MapControl;

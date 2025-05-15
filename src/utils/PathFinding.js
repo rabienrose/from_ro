@@ -1,4 +1,5 @@
 
+
 var GAT = {
 	width:     0,
 	height:    0,
@@ -458,6 +459,7 @@ function searchLongIgnoreCellType( x0, y0, x1, y1, range, out )
 	return result;
 	
 }
+
 
 export default {
 	search:     search,

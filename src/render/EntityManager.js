@@ -2,6 +2,7 @@ import Entity from "./entity/Entity.js";
 import SpriteRenderer from "./SpriteRenderer.js";
 import KEYS from "../control/KeyEventHandler.js";
 import Mouse from "../control/MouseEventHandler.js";
+import Session from "../utils/SessionStorage.js";
 
 var _list = [];
 

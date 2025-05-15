@@ -206,7 +206,6 @@ MapRenderer.onRender = function OnRender( tick, gl )
 
 	Ground.render(gl, modelView, projection, normalMat, fog, light );
 	Models.render(gl, modelView, projection, normalMat, fog, light );
-
 	if (Mouse.intersect && Altitude.intersect( modelView, projection, _pos)) {
 		x = _pos[0];
 		y = _pos[1];
@@ -217,7 +216,6 @@ MapRenderer.onRender = function OnRender( tick, gl )
 		Mouse.world.z =  Altitude.getCellHeight( x, y );
 	}
 
-	Mouse.world.x =  -1;
 	// Display zone effects and entities
 	// Sky.render( gl, modelView, projection, fog, tick );
 	// EffectManager.render( gl, modelView, projection, fog, tick, true);

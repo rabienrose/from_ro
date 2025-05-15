@@ -6,10 +6,21 @@ import EntityManager from '../render/EntityManager.js';
 import Entity from '../render/entity/Entity.js';
 import Camera from '../render/Camera.js';
 import MapControl from '../control/MapControl.js';
+import KEYS from '../control/KeyEventHandler.js';
+import Events from '../utils/Events.js';
+import Renderer from '../render/Renderer.js';
+import Mouse from '../control/MouseEventHandler.js';
+import Altitude from '../render/map/Altitude.js';
+import EntityNet from './EntityNet.js';
+
 
 var MapEngine = {};
 var _isInitialised=false;
 var _mapName = "";
+var _walkTimer = null;
+var _walkLastTick = 0;
+
+
 MapEngine.init = function init()
 {
 	_mapName = Session.ServerChar.mapName;
@@ -60,6 +71,7 @@ MapEngine.init = function init()
 		Network.hookPacket( PACKET.ZC.NOTIFY_PLAYERMOVE,           onPlayerMove );
 		Network.hookPacket( PACKET.ZC.PAR_CHANGE,                  onParameterChange );
 		Network.hookPacket( PACKET.ZC.NOTIFY_TIME,         onPong );
+		EntityNet.call();
 
 	}
 };
@@ -77,30 +89,100 @@ function onDropItem( index, count )
 
 function onRequestWalk()
 {
-	// Events.clearTimeout(_walkTimer);
+	Events.clearTimeout(_walkTimer);
 
-	// // If siting, update direction
-	// if (Session.Entity.action === Session.Entity.ACTION.SIT || KEYS.SHIFT) {
-	// 	Session.Entity.lookTo( Mouse.world.x, Mouse.world.y );
+	// If siting, update direction
+	if (Session.Entity.action === Session.Entity.ACTION.SIT || KEYS.SHIFT) {
+		Session.Entity.lookTo( Mouse.world.x, Mouse.world.y );
 
-	// 	var pkt;
-	// 	if(PACKETVER.value >= 20180307) {
-	// 		pkt = new PACKET.CZ.CHANGE_DIRECTION2();
-	// 	} else {
-	// 		pkt = new PACKET.CZ.CHANGE_DIRECTION();
-	// 	}
-	// 	pkt.headDir = Session.Entity.headDir;
-	// 	pkt.dir     = Session.Entity.direction;
-	// 	Network.sendPacket(pkt);
-	// 	return;
-	// }
+		var pkt = new PACKET.CZ.CHANGE_DIRECTION();
+		pkt.headDir = Session.Entity.headDir;
+		pkt.dir     = Session.Entity.direction;
+		Network.sendPacket(pkt);
+		return;
+	}
 
-	// walkIntervalProcess();
+	walkIntervalProcess();
 }
+
+function checkFreeCell(x, y, range, out)
+{
+	var _x, _y, r;
+	var d_x = Session.Entity.position[0] < x ? -1 : 1;
+	var d_y = Session.Entity.position[1] < y ? -1 : 1;
+
+	// Search possible positions
+	for (r = 0; r <= range; ++r) {
+		for (_x = -r; _x <= r; ++_x) {
+			for (_y = -r; _y <= r; ++_y) {
+				if (isFreeCell(x + _x * d_x, y + _y * d_y)) {
+					out[0] = x + _x * d_x;
+					out[1] = y + _y * d_y;
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+function isFreeCell(x, y)
+{
+	if (!(Altitude.getCellType(x, y) & Altitude.TYPE.WALKABLE)) {
+		return false;
+	}
+
+	var free = true;
+
+	EntityManager.forEach(function(entity){
+		if (entity.objecttype != entity.constructor.TYPE_EFFECT &&
+			entity.objecttype != entity.constructor.TYPE_UNIT &&
+			entity.objecttype != entity.constructor.TYPE_TRAP &&
+			Math.round(entity.position[0]) === x &&
+			Math.round(entity.position[1]) === y) {
+			free = false;
+			return false;
+		}
+
+		return true;
+	});
+
+	return free;
+}
+
+function walkIntervalProcess()
+{
+	// setTimeout isn't accurate, so reduce the value
+	// to avoid possible errors.
+	if (_walkLastTick + 200 > Renderer.tick) {
+		return;
+	}
+
+	var isWalkable   = (Mouse.world.x > -1 && Mouse.world.y > -1);
+	var isCurrentPos = (Math.round(Session.Entity.position[0]) === Mouse.world.x &&
+											Math.round(Session.Entity.position[1]) === Mouse.world.y);
+
+	if (isWalkable && !isCurrentPos) {
+		var pkt = new PACKET.CZ.REQUEST_MOVE();
+		if (!checkFreeCell(Mouse.world.x, Mouse.world.y, 9, pkt.dest)) {
+			pkt.dest[0] = Mouse.world.x;
+			pkt.dest[1] = Mouse.world.y;
+		}
+
+		Network.sendPacket(pkt);
+	}
+
+	Events.clearTimeout(_walkTimer);
+	_walkTimer    =  Events.setTimeout( walkIntervalProcess, 500);
+	_walkLastTick = +Renderer.tick;
+}
+
+
 
 function onRequestStopWalk()
 {
-	// Events.clearTimeout(_walkTimer);
+	Events.clearTimeout(_walkTimer);
 }
 
 function onPong( pkt )

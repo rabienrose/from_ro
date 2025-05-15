@@ -337,13 +337,13 @@ PACKET.ZC.ACCEPT_ENTER2 = function PACKET_ZC_ACCEPT_ENTER2(fp, end) {
 };
 PACKET.ZC.ACCEPT_ENTER2.size = 13;
 
-// 0x85
+// 0x437
 PACKET.CZ.REQUEST_MOVE = function PACKET_CZ_REQUEST_MOVE() {
 	this.dest = [0, 0];
 };
 PACKET.CZ.REQUEST_MOVE.prototype.build = function() {
 	var pkt = new BinaryWriter(5);
-	pkt.writeShort(0x85);
+	pkt.writeShort(0x437);
 	pkt.view.setPos(2, this.dest, true);
 	return pkt;
 };
@@ -594,5 +594,11 @@ PACKET.ZC.CONFIG = function PACKET_ZC_CONFIG(fp, end) {
 	this.Value = fp.readLong();
 };
 PACKET.ZC.CONFIG.size = 10;
+
+PACKET.ZC.NOTIFY_VANISH = function PACKET_ZC_NOTIFY_VANISH(fp, end) {
+	this.GID = fp.readULong();
+	this.type = fp.readUChar();
+};
+PACKET.ZC.NOTIFY_VANISH.size = 7;
 
 export default PACKET;
