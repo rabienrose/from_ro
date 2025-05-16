@@ -36,7 +36,7 @@ function Socket( host, port, proxy, onComplete, onMessage, onClose )
 
 	this.ws.onmessage = function OnMessage( event )
 	{
-		self.onMessage( event.data );
+		self.onMessage( event.data ); 
 	};
 
 	this.ws.onclose = function OnClose()

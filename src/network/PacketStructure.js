@@ -1,3 +1,4 @@
+import BinaryReader from '../utils/BinaryReader.js';
 import BinaryWriter from '../utils/BinaryWriter.js';
 
 function parseCharInfo(fp, end) {
@@ -191,7 +192,7 @@ PACKET.HC.REFUSE_MAKECHAR = function PACKET_HC_REFUSE_MAKECHAR(fp, end) {
 PACKET.HC.REFUSE_MAKECHAR.size = 3;
 
 
-// 0x82d
+// 0x82d 
 PACKET.HC.ACCEPT_ENTER_NEO_UNION_HEADER = function PACKET_HC_ACCEPT_ENTER_NEO_UNION_HEADER(fp, end) {
 	this.TotalSlotNum = fp.readUChar();
 	this.PremiumStartSlot = fp.readUChar();
@@ -600,5 +601,186 @@ PACKET.ZC.NOTIFY_VANISH = function PACKET_ZC_NOTIFY_VANISH(fp, end) {
 	this.type = fp.readUChar();
 };
 PACKET.ZC.NOTIFY_VANISH.size = 7;
+
+// 0x6d
+PACKET.HC.ACCEPT_MAKECHAR_NEO_UNION = function PACKET_HC_ACCEPT_MAKECHAR_NEO_UNION(fp, end) {
+	this.charinfo = parseCharInfo(fp, end)[0];
+};
+PACKET.HC.ACCEPT_MAKECHAR_NEO_UNION.size = 0;
+
+// 0x840
+PACKET.HC.NOTIFY_ACCESSIBLE_MAPNAME = function PACKET_HC_NOTIFY_ACCESSIBLE_MAPNAME(fp, end) {
+	// fp.readString(end-fp.tell());
+};
+PACKET.HC.NOTIFY_ACCESSIBLE_MAPNAME.size = -1;
+
+// 0x8c8
+PACKET.ZC.NOTIFY_ACT3 = function PACKET_ZC_NOTIFY_ACT3(fp, end) {
+	this.GID = fp.readULong();
+	this.targetGID = fp.readULong();
+	this.startTime = fp.readULong();
+	this.attackMT = fp.readLong();
+	this.attackedMT = fp.readLong();
+	this.damage = fp.readLong();
+	fp.seek(1, BinaryReader.SEEK_CUR);
+	this.count = fp.readShort();
+	this.action = fp.readUChar();
+	this.leftDamage = fp.readLong();
+};
+PACKET.ZC.NOTIFY_ACT3.size = 34;
+
+// 0x88
+PACKET.ZC.STOPMOVE = function PACKET_ZC_STOPMOVE(fp, end) {
+	this.AID = fp.readULong();
+	this.xPos = fp.readShort();
+	this.yPos = fp.readShort();
+};
+PACKET.ZC.STOPMOVE.size = 10;
+
+
+PACKET.CZ.REQUEST_ACT = function PACKET_CZ_REQUEST_ACT() {
+	this.targetGID = 0;
+	this.action = 0;
+};
+PACKET.CZ.REQUEST_ACT.prototype.build = function() {
+	var pkt = new BinaryWriter(7);
+
+	pkt.writeShort(0x369);
+	pkt.view.setUint32(2, this.targetGID, true);
+	pkt.view.setUint8(6, this.action, true);
+	return pkt;
+};
+
+// 0x118
+PACKET.CZ.CANCEL_LOCKON = function PACKET_CZ_CANCEL_LOCKON() {};
+PACKET.CZ.CANCEL_LOCKON.prototype.build = function() {
+	var pkt_len = 2;
+	var pkt_buf = new BinaryWriter(pkt_len);
+
+	pkt_buf.writeShort(0x118);
+	return pkt_buf;
+};
+
+// 0x977
+PACKET.ZC.NOTIFY_MONSTER_HP = function PACKET_ZC_NOTIFY_MONSTER_HP(fp, end) {
+	this.AID = fp.readULong();
+	this.hp = fp.readULong();
+	this.maxhp = fp.readULong();
+};
+PACKET.ZC.NOTIFY_MONSTER_HP.size = 14;
+
+// 0x94
+PACKET.CZ.REQNAME = function PACKET_CZ_REQNAME() {
+	this.AID = 0;
+};
+PACKET.CZ.REQNAME.prototype.build = function() {
+	var pkt = new BinaryWriter(6);
+
+	pkt.writeShort(0x96a);
+	pkt.view.setUint32(2, this.AID, true);
+	return pkt;
+};
+
+// 0x95
+PACKET.ZC.ACK_REQNAME = function PACKET_ZC_ACK_REQNAME(fp, end) {
+	this.AID = fp.readULong();
+	this.CName = fp.readString(NAME_LENGTH);
+};
+PACKET.ZC.ACK_REQNAME.size = 30;
+
+
+PACKET.ZC.USESKILL_ACK2 = function PACKET_ZC_USESKILL_ACK2(fp, end) {
+	this.AID = fp.readULong();
+	this.targetID = fp.readULong();
+	this.xPos = fp.readShort();
+	this.yPos = fp.readShort();
+	this.SKID = fp.readUShort();
+	this.property = fp.readULong();
+	this.delayTime = fp.readULong();
+	this.isDisposable = fp.readUChar();
+};
+PACKET.ZC.USESKILL_ACK2.size = 25;
+
+// 0xc0
+PACKET.ZC.EMOTION = function PACKET_ZC_EMOTION(fp, end) {
+	this.GID = fp.readULong();
+	this.type = fp.readUChar();
+};
+PACKET.ZC.EMOTION.size = 7;
+
+// 0x9db
+PACKET.ZC.NOTIFY_MOVEENTRY8 = function PACKET_ZC_NOTIFY_MOVEENTRY8(fp, end) {
+	this.objecttype = fp.readUChar();
+	this.GID = fp.readULong();
+	this.AID = fp.readULong();
+	this.speed = fp.readShort();
+	this.bodyState = fp.readShort();
+	this.healthState = fp.readShort();
+	this.effectState = fp.readLong();
+	this.job = fp.readShort();
+	this.head = fp.readUShort();
+	this.weapon = fp.readULong();
+	this.accessory = fp.readUShort();
+	this.moveStartTime = fp.readULong();
+	this.accessory2 = fp.readUShort();
+	this.accessory3 = fp.readUShort();
+	this.headpalette = fp.readShort();
+	this.bodypalette = fp.readShort();
+	this.headDir = fp.readShort();
+	this.Robe = fp.readUShort();
+	this.GUID = fp.readULong();
+	this.GEmblemVer = fp.readShort();
+	this.honor = fp.readShort();
+	this.virtue = fp.readLong();
+	this.isPKModeON = fp.readUChar();
+	this.sex = fp.readUChar();
+	this.MoveData = fp.readPos2();
+	this.xSize = fp.readUChar();
+	this.ySize = fp.readUChar();
+	this.clevel = fp.readShort();
+	this.font = fp.readShort();
+	this.maxhp = fp.readLong();
+	this.hp = fp.readLong();
+	this.isBoss = fp.readUChar();
+	this.name = fp.readString(end-fp.tell());
+};
+PACKET.ZC.NOTIFY_MOVEENTRY8.size = -1;
+
+// 0x9dc
+PACKET.ZC.NOTIFY_STANDENTRY8 = function PACKET_ZC_NOTIFY_STANDENTRY8(fp, end) {
+	this.objecttype = fp.readUChar();
+	this.GID = fp.readULong();
+	this.AID = fp.readULong();
+	this.speed = fp.readShort();
+	this.bodyState = fp.readShort();
+	this.healthState = fp.readShort();
+	this.effectState = fp.readLong();
+	this.job = fp.readShort();
+	this.head = fp.readShort();
+	this.weapon = fp.readLong();
+	this.accessory = fp.readShort();
+	this.accessory2 = fp.readShort();
+	this.accessory3 = fp.readShort();
+	this.headpalette = fp.readShort();
+	this.bodypalette = fp.readShort();
+	this.headDir = fp.readShort();
+	this.Robe = fp.readShort();
+	this.GUID = fp.readULong();
+	this.GEmblemVer = fp.readShort();
+	this.honor = fp.readShort();
+	this.virtue = fp.readLong();
+	this.isPKModeON = fp.readUChar();
+	this.sex = fp.readUChar();
+	this.PosDir = fp.readPos();
+	this.xSize = fp.readUChar();
+	this.ySize = fp.readUChar();
+	this.clevel = fp.readShort();
+	this.font = fp.readShort();
+	this.hp = fp.readLong();
+	this.maxhp = fp.readLong();
+	this.isBoss = fp.readUChar();
+	this.name = fp.readString(end - fp.tell());
+};
+PACKET.ZC.NOTIFY_STANDENTRY8.size = -1;
 
 export default PACKET;

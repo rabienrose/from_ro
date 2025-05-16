@@ -1,4 +1,4 @@
-import glMatrix from '../../utils/gl-matrix.js';
+import * as glMatrix from 'gl-matrix';
 import PathFinding from '../../utils/PathFinding.js';
 import Mouse from '../../control/MouseEventHandler.js';
 

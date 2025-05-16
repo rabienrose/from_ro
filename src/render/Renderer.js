@@ -1,10 +1,9 @@
-import glMatrix from '../utils/gl-matrix.js';
+import { perspective_custom_m4 } from '../utils/glm_ex.js';
 import WebGL from '../utils/WebGL.js';
 import Session from '../utils/SessionStorage.js';
 import Camera from './Camera.js';
 import Events from '../utils/Events.js';
 import Mouse from '../control/MouseEventHandler.js';
-var mat4          = glMatrix.mat4;
 
 var Renderer = {};
 
@@ -86,7 +85,7 @@ Renderer.resize = function resize()
 
 	Renderer.gl.viewport( 0, 0, width, height );
 
-	mat4.perspective_custom( Renderer.vFov, width/height, 1, 3000, Camera.projection );
+	perspective_custom_m4( Renderer.vFov, width/height, 1, 3000, Camera.projection );
 };
 
 Renderer.rendering = false;
@@ -102,9 +101,11 @@ Renderer._render = function render(timeDelta)
 	Session.serverTick += (newTick - Renderer.tick);
 	Renderer.tick = newTick;
 	Events.process( Renderer.tick );
-	var i, count;
-	for (i = 0, count = Renderer.renderCallbacks.length; i < count; ++i) {
-		Renderer.renderCallbacks[i]( Renderer.tick, Renderer.gl );
+	if (Renderer.rendering) {
+		var i, count;
+		for (i = 0, count = Renderer.renderCallbacks.length; i < count; ++i) {
+			Renderer.renderCallbacks[i]( Renderer.tick, Renderer.gl );
+		}
 	}
 	
 };

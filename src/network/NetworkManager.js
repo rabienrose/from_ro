@@ -1,6 +1,7 @@
 import BinaryReader from '../utils/BinaryReader';
 import PacketRegister from './PacketRegister';
 import WebSocket from './WebSocket';
+import Globals from "../utils/Globals.js"
 
 var Packets = function( name, Struct, size )
 {
@@ -17,9 +18,10 @@ var _save_buffer = null;
 var packetDump = false;
 
 var Network = {};
+
 Network.connect = function( host, port, callback)
 {
-	var proxy = "ws://127.0.0.1:443/";
+	var proxy = "ws://"+Globals.root_ip+":443/";
 	_socket = new WebSocket(host, port, proxy, 
 		(success)=>{
 			var msg   = 'Fail';
@@ -41,6 +43,8 @@ Network.connect = function( host, port, callback)
 		}, Network.onMessage, Network.onClose);
 }
 
+
+
 Network.sendPacket = function( Packet )
 {
 	var pkt = Packet.build();
@@ -48,7 +52,7 @@ Network.sendPacket = function( Packet )
 		let fp = new BinaryReader( pkt.buffer );
 		let id = fp.readUShort()
 		console.log("%c[Network] Dump Send: \n%cPacket ID: 0x%s\nPacket Name: %s\nLength: %d\nContent:\n%s", 
-			'color:#007070', 'color:#FFFFFF',
+			'color:#007070', 'color:#000000',
 			id.toString(16), Packet.constructor.name, pkt.buffer.byteLength, Network.utilsBufferToHexString(pkt.buffer).toUpperCase());
 	}
 	Network.send( pkt.buffer );
@@ -111,7 +115,6 @@ Network.onMessage = function( buf )
 			_save_buffer = new Uint8Array( buffer, offset, fp.length - offset);
 			return;
 		}
-
 		id = fp.readUShort();
 		
 		let packet_len = Packets.list[id]?Packets.list[id].size:fp.length - offset;
@@ -137,12 +140,12 @@ Network.onMessage = function( buf )
 			if(packetDump) {
 				let buffer_console = new Uint8Array( buffer, 0, length );
 				console.log("%c[Network] Dump Recv:\n%cPacket ID: 0x%s\nPacket Name: %s\nLength: %d\nContent:\n%s", 
-					'color:#900090', 'color:#FFFFFF', 
+					'color:#900090', 'color:#000000', 
 					id.toString(16), packet.name, length, Network.utilsBufferToHexString(buffer_console).toUpperCase());
 			}
 			
 			packet.instance = new packet.Struct(fp, offset);
-			console.log( '%c[Network] Recv:', 'color:#900090', packet.instance, packet.callback ? '' : '(no callback)'  );
+			// console.log( '%c[Network] Recv:', 'color:#900090', packet.instance, packet.callback ? '' : '(no callback)'  );
 			if (packet.callback) {
 				packet.callback(packet.instance);
 			}
@@ -150,7 +153,7 @@ Network.onMessage = function( buf )
 			if(packetDump) {
 				let unknown_buffer = new Uint8Array( buffer, 0, length );
 				console.log("%c[Network] Dump Recv:\n%cPacket ID: 0x%s\nPacket Name: [UNKNOWN]\nLength: %d\nContent:\n%s",
-					'color:#900090', 'color:#FFFFFF',
+					'color:#900090', 'color:#000000',
 					id.toString(16), length, Network.utilsBufferToHexString(unknown_buffer).toUpperCase());
 			}
 			console.error(

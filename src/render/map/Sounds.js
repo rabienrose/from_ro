@@ -1,5 +1,5 @@
 import SoundManager from '../../audio/SoundManager.js';
-import glMatrix from '../../utils/gl-matrix.js';
+import * as glMatrix from 'gl-matrix';
 
 var vec2   = glMatrix.vec2;
 var _list  = [];

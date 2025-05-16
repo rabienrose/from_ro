@@ -1,8 +1,8 @@
 import BinaryReader from '../utils/BinaryReader.js';
-import glMatrix from '../utils/gl-matrix.js';
+import { calcNormal_v3, extractRotation_m4, toMat4_m3 } from '../utils/glm_ex.js';
+import * as glMatrix from 'gl-matrix';
 
 var vec3 = glMatrix.vec3;
-var mat3 = glMatrix.mat3;
 var mat4 = glMatrix.mat4;
 
 function RSM( data )
@@ -361,14 +361,14 @@ RSM.Node.prototype.calcBoundingBox = function NodeCalcBoundingBox( _matrix )
 		mat4.rotate( this.matrix, this.matrix, this.rotangle, this.rotaxis );
 	}
 	else {
-		mat4.rotateQuat( this.matrix, this.matrix, this.rotKeyframes[0].q );
+		rotateQuat_m4( this.matrix, this.matrix, this.rotKeyframes[0].q );
 	}
 	mat4.scale( this.matrix, this.matrix, this.scale );
 	mat4.copy( matrix, this.matrix );
 	if (!this.is_only) {
 		mat4.translate( matrix, matrix, this.offset );
 	}
-	mat4.multiply( matrix, matrix, mat3.toMat4(this.mat3) );
+	mat4.multiply( matrix, matrix, toMat4_m3(this.mat3) );
 	for (i = 0, count = vertices.length; i < count; ++i) {
 		x = vertices[i][0];
 		y = vertices[i][1];
@@ -414,9 +414,9 @@ RSM.Node.prototype.compile = function( instance_matrix )
 	if (!this.is_only) {
 		mat4.translate( matrix, matrix, this.offset );
 	}
-	mat4.multiply( matrix, matrix, mat3.toMat4(this.mat3) );
+	mat4.multiply( matrix, matrix, toMat4_m3(this.mat3) );
 	mat4.multiply( modelViewMat, instance_matrix, matrix );
-	mat4.extractRotation( normalMat, modelViewMat );
+	extractRotation_m4( normalMat, modelViewMat );
 	count = vertices.length;
 	vert  = new Float32Array(count*3);
 	for (i = 0; i < count; ++i) {
@@ -473,7 +473,7 @@ RSM.Node.prototype.calcNormal_FLAT = function calcNormalFlat( out, normalMat, gr
 	var vertices = this.vertices;
 	for (i = 0, j = 0, count = faces.length; i < count; ++i, j+=3) {
 		face = faces[i];
-		vec3.calcNormal(
+		calcNormal_v3(
 			vertices[ face.vertidx[0] ],
 			vertices[ face.vertidx[1] ],
 			vertices[ face.vertidx[2] ],

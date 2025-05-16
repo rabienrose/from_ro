@@ -36,14 +36,16 @@ AttachmentManager.prototype.add = function add( attachment )
 					attachment.spr = attachment.completeFile + '.spr';
 					attachment.act = attachment.completeFile + '.act';
 			} else if (attachment.file) {
-		attachment.spr = 'data/sprite/\xc0\xcc\xc6\xd1\xc6\xae/' + attachment.file + '.spr';
-		attachment.act = 'data/sprite/\xc0\xcc\xc6\xd1\xc6\xae/' + attachment.file + '.act';
+		attachment.spr = '/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/' + attachment.file + '.spr';
+		attachment.act = '/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/' + attachment.file + '.act';
 	}
 
 	// Start rendering once sprite is loaded
-	Client.loadFile(attachment.spr, function onLoad() {
+	FileManager.load(attachment.act);
+	FileManager.load(attachment.spr, {to_rgba:true})
+	.then(()=>{
 		this.list.push(attachment);
-	}.bind(this), null, {to_rgba:true});
+	});
 };
 
 AttachmentManager.prototype.get = function get( uid ) {
@@ -126,8 +128,9 @@ AttachmentManager.prototype.renderAttachment = function renderAttachmentClosure(
 		var animation, animations, layers;
 		var clean = false;
 
-		spr = Client.loadFile(attachment.spr);
-		act = Client.loadFile(attachment.act);
+		var spr = FileManager.read(attachment.spr);
+		var act = FileManager.read(attachment.act);
+
 
 		if (!spr || !act) {
 			return clean;

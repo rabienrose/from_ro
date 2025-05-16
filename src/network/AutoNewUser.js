@@ -5,58 +5,70 @@ import EntityManager from "../render/EntityManager.js";
 import Entity from "../render/entity/Entity.js";
 import Renderer from "../render/Renderer.js";
 import Session from "../utils/SessionStorage.js";
+import BGM from "../audio/BGM.js";
 var AutoNewUser={}
 
 function getRandomName(num_len){
-  let bytes = new Uint8Array(num_len);
-  crypto.getRandomValues(bytes);
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
-  for (let i = 0; i < bytes.length; i++) {
-    result += String.fromCharCode(bytes[i]);
+  for (let i = 0; i < num_len; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  result = btoa(result);
   return result;
 }
-
+var temp_username = "";
 AutoNewUser.connected=false;
 
 AutoNewUser.start=function(){
+  Renderer.init(); 
+  BGM.initHTML5();  
   const savedUsername = localStorage.getItem('username');
   var username = "";
   if (savedUsername){
     username=savedUsername;
   }else{
     username = getRandomName(10);
-    username=username+"_F"
+    temp_username=username;
+    const sexSuffix = Math.random() < 0.5 ? "_F" : "_M";
+    username = username + sexSuffix;
   }
   var password = 1;
 
   var char_in_map_cb=()=>{
+    Map.onEnterMap=AutoNewUser.onEnterMap;
     Map.init();
   }
 
-  var create_succ_cb=()=>{
+  var create_succ_cb=(pkg)=>{
+    
+    let entity = new Entity();
+    entity._sex = Session.Sex;
+    entity.set(pkg.charinfo)
     Char.onInMap=char_in_map_cb;
-    Char.onConnectRequest(0);
+    Char.onConnectRequest(entity);
   } 
 
   var _login_cb = (success,error)=>{
     if (success){
+
       Char.onConnect=(pkg)=>{
-        let entity = new Entity();
-        entity._sex = Session.Sex;
-        entity.set(pkg.charInfo[0])
-        entity.setAction({
-					action: entity.ACTION.IDLE,
-					frame: 0,
-					repeat: true,
-					play: true
-				});
         if (pkg.charInfo.length==0){
+          localStorage.setItem('username', temp_username);
           var random_name=getRandomName(10);
           Char.onCreateSucc = create_succ_cb;
-          Char.charCreationRequest(random_name,0,0,0,0)
+          var random_color = Math.floor(Math.random() * 9);
+          var random_hair = Math.floor(Math.random() * 13);
+          Char.charCreationRequest(random_name,random_hair,random_color,0,0)
         }else{
+          let entity = new Entity();
+          entity._sex = Session.Sex;
+          entity.set(pkg.charInfo[0])
+          entity.setAction({
+            action: entity.ACTION.IDLE,
+            frame: 0,
+            repeat: true,
+            play: true
+          });
           Char.onInMap=char_in_map_cb;
           Char.onConnectRequest(entity);
         }

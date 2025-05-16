@@ -8,14 +8,30 @@ import Altitude from './Altitude.js';
 import Ground from './Ground.js';
 import Memory from '../utils/MemoryManager.js';
 import Renderer from '../render/Renderer.js';
+import NetworkManager from './NetworkManager.js';
 import Texture from '../utils/Texture.js';
-
+import Globals from "../utils/Globals.js"
 
 var FileManager = {};
-FileManager.remoteClient = '';
+FileManager.remoteClient = 'http://'+Globals.root_ip+':8002';
 FileManager.filesAlias = {};
 var _onload_promise = {};
 
+
+FileManager.send_debug_int= function(name, val){
+	let info = {
+		name:name,
+		val:val
+	}
+	console.log("send_debug_int: ",info);
+	fetch(FileManager.remoteClient+'/debug',{
+		method:'POST',
+		headers:{
+			'Content-Type':'application/json'
+		},
+		body:JSON.stringify(info)
+	})
+}
 FileManager.get = function GetHTTP( filename )
 {
 	filename = filename.replace(/^\s+|\s+$/g, '');
@@ -36,6 +52,16 @@ FileManager.get = function GetHTTP( filename )
 
 FileManager.read = function Read( filename ){
 	return Memory.get(filename);
+}
+
+FileManager.fetch = function Fetch( filename )
+{
+	var promise = this.get(filename)
+		.then(buffer => {
+			Memory.set(filename, buffer);
+			return buffer;
+		});
+	return promise;
 }
 
 FileManager.load = function Load( filename, args )

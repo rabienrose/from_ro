@@ -6,9 +6,9 @@ import SpriteRenderer from '../SpriteRenderer.js';
 import DB from '../../configs/DBManager.js';
 import Sound from '../../audio/SoundManager.js';
 import MemoryManager from '../../utils/MemoryManager.js';
-import Entity from '../Entity/Entity.js';
+import Entity from '../entity/Entity.js';
 import EffectManager from '../EffectManager.js';
-
+import Preferences from '../../configs/Preferences.js';
 var EndureSound    = "player_metal.wav";
 
 function Damage()
@@ -37,7 +37,6 @@ Damage.TYPE = {
 	COMBO_B:       1 << 10
 };
 
-var _enableSuffix = false;
 var _numbers;
 var _msgNames = {
 	0: 'miss',
@@ -54,41 +53,31 @@ var prevCombo = [];
 
 Damage.init = function init( gl )
 {
-	var confChange = !(_enableSuffix === Configs.get('enableDmgSuffix'));
-	
-	_enableSuffix = Configs.get('enableDmgSuffix');
-
 	// Already loaded
 	if (_numbers && _numbers[0] && _msg.miss && _msgBlue.miss) {
-		if(confChange){
-			// Remove old file, need to get different version of the sprite
-			MemoryManager.remove(gl, 'data/sprite/\xc0\xcc\xc6\xd1\xc6\xae/msg.spr');
-		} else {
 			return;
-		}
 	}
-	
-	_numbers = new Array(_enableSuffix ? 12 : 10);
+	_numbers = new Array(10);
+	var files = [
+		'/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/\xbc\xfd\xc0\xda.spr',
+		'/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/msg.spr',
+		'/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/bluemsg.spr'
+	];
 
-	Client.getFiles([
-		'data/sprite/\xc0\xcc\xc6\xd1\xc6\xae/\xbc\xfd\xc0\xda.spr',
-		'data/sprite/\xc0\xcc\xc6\xd1\xc6\xae/msg.spr',
-		'data/sprite/\xc0\xcc\xc6\xd1\xc6\xae/bluemsg.spr'
-	], function( numbers, msg, bluemsg ) {
+	// Load damage number and message sprites
+	files = files.map(function(file) {
+		return FileManager.fetch(file);
+	});
+
+	Promise.all(files).then(function(results) {
 		var sprNumbers, sprMsg, sprBlue;
+
+		sprNumbers = new Sprite(results[0]);
+		sprMsg   = new Sprite(results[1]);
+		sprBlue   = new Sprite(results[2]);
 
 		// Load it properly later using webgl
 		MemoryManager.remove(gl, 'data/sprite/\xc0\xcc\xc6\xd1\xc6\xae/msg.spr');
-
-		try {
-			sprNumbers = new Sprite(numbers);
-			sprMsg   = new Sprite(msg);
-			sprBlue   = new Sprite(bluemsg);
-		}
-		catch(e) {
-			console.error('Damage::init() - ' + e.message );
-			return;
-		}
 
 		// Create SpriteSheet
 		for (var i = 0; i < _numbers.length; ++i) {
@@ -142,8 +131,8 @@ Damage.init = function init( gl )
 			gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			gl.generateMipmap( gl.TEXTURE_2D );
 		}
-
 	});
+
 };
 
 Damage.add = function add( damage, entity, tick, weapon, type)
@@ -164,25 +153,7 @@ Damage.add = function add( damage, entity, tick, weapon, type)
 	var canvas  = document.createElement('canvas');
 	var ctx     = canvas.getContext('2d');
 	var numbers;
-	var suffix = null;
-
-	if (_enableSuffix) {
-		// Check for large numbers and convert accordingly
-		if (damage >= 100000000) {
-			damage = Math.floor(damage / 1000000);
-			suffix = 11; // 'M'
-		} else if (damage >= 1000000) {
-			damage = Math.floor(damage / 1000);
-			suffix = 10; // 'K'
-		}
-	}
-
 	numbers = damage.toString().split('');
-
-	// Add suffix to numbers if it exists
-	if (suffix !== null) {
-			numbers.push(suffix);
-	}
 
 	var width   = 0;
 	var height  = 0;
@@ -284,11 +255,13 @@ Damage.add = function add( damage, entity, tick, weapon, type)
 
 	// Miss
 	if (!damage) {
-		obj.texture  = _msg.miss.texture;
-		obj.width    = _msg.miss.canvas.width;
-		obj.height   = _msg.miss.canvas.height;
-		obj.isDisposable = false;
-		_list.push(obj);
+		if (Preferences.Map.miss) {
+			obj.texture  = _msg.miss.texture;
+			obj.width    = _msg.miss.canvas.width;
+			obj.height   = _msg.miss.canvas.height;
+			obj.isDisposable = false;
+			_list.push(obj);
+		}
 		return;
 	}
 

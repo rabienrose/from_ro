@@ -77,7 +77,7 @@ function onConnectionRequest( username, password, _login_cb )
   Network.hookPacket( PACKET.AC.REFUSE_LOGIN,    onConnectionRefused );
   Network.hookPacket( PACKET.SC.NOTIFY_BAN,      onServerClosed );
   Sound.play('click_sound.wav');
-  const address = "127.0.0.1" 
+  const address = "113.54.199.228" 
   const port = 6900
   Network.connect( address, port, function( success ) {
     if ( !success ) {
@@ -88,7 +88,7 @@ function onConnectionRequest( username, password, _login_cb )
     pkt.ID         = username;
     pkt.Passwd     = password;
     pkt.Version    = 55;
-    pkt.clienttype = 25;
+    pkt.clienttype = 4;
     Network.sendPacket(pkt);
   });
 }

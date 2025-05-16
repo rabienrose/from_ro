@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from "react";
 import FileManager from "../network/FileManager.js";
 import "./LoadingPage.css";
-
+import Globals from "../utils/Globals.js"
 const LoadingPage = ({
   progress
 }) => {
+  useEffect(() => {
+    const container = document.querySelector('.loading-container');
+    if (container) {
+      container.style.backgroundImage = `url("http://${Globals.root_ip}:8002/images/bg2.jpg")`;
+    }
+  }, []);
   return (
     <div className="loading-container">
       <div className="loading-wrapper">

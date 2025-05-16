@@ -2,15 +2,19 @@ import Renderer from '../Renderer.js';
 import Altitude from '../map/Altitude.js';
 import Session from '../../utils/SessionStorage.js';
 import FileManager from '../../network/FileManager.js';
-import glMatrix from '../../utils/gl-matrix.js';
+import * as glMatrix from 'gl-matrix';
 import EntityAction from './EntityAction.js';
 import EntityCast from './EntityCast.js';
 import EntitySound from './EntitySound.js';
 import EntityView from './EntityView.js';
 import EntityWalk from './EntityWalk.js';
 import EntityRender from './EntityRender.js';
+import EntityLife from './EntityLife.js';
+import EntityDisplay from './EntityDisplay.js';
 import EntityAttachments from './EntityAttachments.js';
 import EntityAnimations from './EntityAnimations.js';
+import EntityControl from '../../control/EntityControl.js';
+import EntityState from './EntityState.js';
 // import EntityAura from './EntityAura.js';
 
 
@@ -20,19 +24,18 @@ var mat4     = glMatrix.mat4;
 function Entity( data )
 {
 	// Extend Entity
-	// require('Controls/EntityControl').call(this);
-	
+	EntityControl.call(this);
 	EntityAction.call(this);
 	EntityCast.call(this);
-	// require('./EntityLife').call(this);
-	// require('./EntityDisplay').call(this);
+	EntityLife.call(this);
+	EntityDisplay.call(this);
 	// require('./EntityDialog').call(this);
 	EntitySound.call(this);
 	EntityView.call(this);
 	EntityWalk.call(this);
 	EntityRender.call(this);
 	// require('./EntityRoom').call(this);
-	// require('./EntityState').call(this);
+	EntityState.call(this);
 	EntityAttachments.call(this);
 	EntityAnimations.call(this);
 	// EntityAura.call(this);

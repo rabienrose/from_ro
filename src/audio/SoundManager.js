@@ -1,6 +1,6 @@
-import glMatrix from '../utils/gl-matrix';
+import * as glMatrix from 'gl-matrix';
 import Session from "../utils/SessionStorage";
-
+import FileManager from '../network/FileManager.js';
 const C_MAX_SOUND_INSTANCES = 10; //starting max, later balanced based on mediaPlayerCount
 const C_MAX_CACHED_SOUND_INSTANCES = 30; //starting max, later balanced based on mediaPlayerCount
 const C_MAX_MEDIA_PLAYERS = 800; //Browsers are limited to 1000 media players max (in Chrome). Let's not go all the way.
@@ -53,7 +53,7 @@ SoundManager.play = function play( filename, vol ) {
 	sound             = document.createElement('audio');
 	mediaPlayerCount++;
 	sound.filename    = filename;
-	sound.src         = 'resources/wav/' + filename;
+	sound.src         = FileManager.remoteClient+'/resources/wav/' + filename;
 	sound.volume      = Math.min(volume,1.0);
 	sound._volume     = volume;
 	
@@ -134,6 +134,7 @@ function onSoundEnded()
 
 function onSoundError()
 {
+	console.log("onSoundError: ", this);
 	var pos = _sounds[this.filename].instances.indexOf(this);
 
 	if (pos !== -1) {

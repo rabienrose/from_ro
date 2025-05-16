@@ -270,7 +270,7 @@ define(['Utils/WebGL', 'Utils/gl-matrix', 'Core/Client', 'Loaders/Model'], funct
 	RsmEffect.beforeRender = function beforeRender(gl, modelView, projection, fog, tick) {
 
 		// Calculate normal mat
-		mat4.toInverseMat3(modelView, _normalMat);
+		toInverseMat3_m4(modelView, _normalMat);
 		mat3.transpose(_normalMat, _normalMat);
 
 

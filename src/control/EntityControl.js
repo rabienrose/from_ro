@@ -1,7 +1,11 @@
-import glMatrix from "../utils/gl-matrix";
+import * as glMatrix from "gl-matrix";
 import Preferences from "../configs/Preferences";
 import PathFinding from "../utils/PathFinding";
-var mat4    = glMatrix.mat4;
+import Session from "../utils/SessionStorage";
+import Network from "../network/NetworkManager";
+import PACKET from "../network/PacketStructure";
+import Mouse from "../control/MouseEventHandler";
+
 var vec2    = glMatrix.vec2;
 
 function onMouseDown()
@@ -59,10 +63,6 @@ function onMouseDown()
 	return false;
 }
 
-
-/**
- * Stop clicking on an entity
- */
 function onMouseUp()
 {
 }
@@ -88,7 +88,6 @@ function onContextMenu()
 	}
 	return false;
 }
-
 
 function onFocus()
 {
@@ -134,15 +133,10 @@ function onFocus()
 				}
 
 				if(main.isOverWeight){
-					ChatBox.addText( DB.getMessage(243), ChatBox.TYPE.ERROR, ChatBox.FILTER.PUBLIC_LOG);
 					return true;
 				}
 
-				if(PACKETVER.value >= 20180307) {
-					pkt        = new PACKET.CZ.REQUEST_ACT2();
-				} else {
-					pkt        = new PACKET.CZ.REQUEST_ACT();
-				}
+				pkt        = new PACKET.CZ.REQUEST_ACT();
 				pkt.action    = 7;
 				pkt.targetGID = this.GID;
 
@@ -179,9 +173,9 @@ function onFocusEnd()
 				Network.sendPacket(new PACKET.CZ.CANCEL_LOCKON());
 			}
 	}
-	// this.display.display = false;
-	// this.display.remove();
-	// this.attachments.remove('lockon');
+	this.display.display = false;
+	this.display.remove();
+	this.attachments.remove('lockon');
 }
 
 
@@ -202,8 +196,6 @@ function canAttackEntity() {
 
 export default function Init()
 {
-	this.onMouseOver   = onMouseOver;
-	this.onMouseOut    = onMouseOut;
 	this.onMouseDown   = onMouseDown;
 	this.onMouseUp     = onMouseUp;
 	this.onFocus       = onFocus;

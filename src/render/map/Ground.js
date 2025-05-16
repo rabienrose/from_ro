@@ -1,7 +1,7 @@
 import Texture from '../../utils/Texture.js';
 import WebGL from '../../utils/WebGL.js';
 import Preferences from '../../configs/Preferences.js';
-import glMatrix from '../../utils/gl-matrix.js';
+import * as glMatrix from 'gl-matrix';
 
 var mat4        = glMatrix.mat4;
 var mat3        = glMatrix.mat3;

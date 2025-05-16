@@ -257,16 +257,19 @@ function onMapChange( pkt )
 		EntityManager.add( Session.Entity );
 		Camera.setTarget( Session.Entity );
 		Camera.init();
+		Renderer.rendering = true;
 		Network.sendPacket(
 			new PACKET.CZ.NOTIFY_ACTORINIT()
 		);
+		MapEngine.onEnterMap();
 	};
+	Renderer.rendering = false;
 	MapRenderer.setMap( pkt.mapName );
 }
 
 function onReceiveAccountID( pkt )
 {
-	// Session.Character.GID = pkt.AID;
+	Session.Character.GID = pkt.AID;
 }
 
 function onParameterChange( pkt )

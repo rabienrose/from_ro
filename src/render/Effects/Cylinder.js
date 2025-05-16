@@ -1,7 +1,7 @@
 import WebGL from '../../utils/WebGL.js';
 import FileManager from '../../network/FileManager.js';
 import Camera from '../Camera.js';
-import glMatrix from '../../utils/gl-matrix.js';
+import * as glMatrix from 'gl-matrix';
 var blendMode = {};
 Cylinder.buffer;
 var mat4 = glMatrix.mat4;

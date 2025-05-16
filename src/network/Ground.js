@@ -1,7 +1,7 @@
 import BinaryReader from '../utils/BinaryReader';
-import glMatrix from '../utils/gl-matrix';
+import { calcNormal_v4 } from '../utils/glm_ex';
+import * as glMatrix from 'gl-matrix';
 var vec3 = glMatrix.vec3;
-var vec4 = glMatrix.vec4;
 
 function GND( data )
 {
@@ -280,7 +280,7 @@ GND.prototype.getSmoothNormal = function getSmoothNormal()
 				b[0] = (x+1)*2;  b[1] = cell.height[1];  b[2] = (y+0)*2;
 				c[0] = (x+1)*2;  c[1] = cell.height[3];  c[2] = (y+1)*2;
 				d[0] = (x+0)*2;  d[1] = cell.height[2];  d[2] = (y+1)*2;
-				vec4.calcNormal( a, b, c, d, tmp[ x + y * width ] );
+				calcNormal_v4( a, b, c, d, tmp[ x + y * width ] );
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 import Renderer from '../Renderer.js';
-import glMatrix from '../../utils/gl-matrix.js';
+import * as glMatrix from 'gl-matrix';
 
 var vec4  = glMatrix.vec4;
 var _pos  = new Float32Array(4);

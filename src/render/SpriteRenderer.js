@@ -1,6 +1,6 @@
 
 import WebGL from '../utils/WebGL.js';
-import glMatrix from '../utils/gl-matrix.js';
+import * as glMatrix from 'gl-matrix';
 import Camera from './Camera.js';
 
 var mat4 = glMatrix.mat4;

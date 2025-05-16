@@ -84,7 +84,9 @@ var _over = null;
 function getOverEntity() {
 	return _over;
 }
+
 var _saveShift = false;
+
 function setOverEntity(target) {
 	var current = _over;
 	if (target === current && _saveShift === KEYS.SHIFT) {
@@ -92,11 +94,9 @@ function setOverEntity(target) {
 	}
 	_saveShift = KEYS.SHIFT;
 	if (current) {
-		current.onMouseOut();
 	}
 	if (target) {
 		_over = target;
-		target.onMouseOver();
 	} else {
 		_over = null;
 	}

@@ -35,9 +35,9 @@ Char.init = function()
   
   Network.hookPacket( PACKET.HC.ACCEPT_ENTER_NEO_UNION,        Char.onConnectionAccepted );
   Network.hookPacket( PACKET.HC.REFUSE_ENTER,                  Char.onConnectionRefused );
-  Network.hookPacket( PACKET.HC.ACCEPT_MAKECHAR,    			     Char.onCreationSuccess );
-  Network.hookPacket( PACKET.HC.REFUSE_MAKECHAR,               Char.onCreationFail );
+  Network.hookPacket( PACKET.HC.ACCEPT_MAKECHAR_NEO_UNION,     Char.onCreationSuccess );
   Network.hookPacket( PACKET.HC.NOTIFY_ZONESVR,                Char.onReceiveMapInfo);
+  Network.hookPacket( PACKET.HC.NOTIFY_ACCESSIBLE_MAPNAME,     Char.onMapUnavailable);
 }
 
 Char.reload = function()
@@ -81,6 +81,7 @@ Char.onConnectionRefused = function( pkt )
 
 Char.onMapUnavailable = function( pkt )
 {
+  console.log("onMapUnavailable", pkt);
 }
   
 Char.onRequestCharDel = function(pkt) {
@@ -119,6 +120,7 @@ Char.charCreationRequest = function( name, hair, color, job, sex )
 
 Char.onCreationSuccess = function( pkt )
 {
+  Char.onCreateSucc(pkt);
 }
 
 Char.onCreationFail = function( pkt )

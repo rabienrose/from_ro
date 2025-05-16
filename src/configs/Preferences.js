@@ -38,6 +38,7 @@ var get = function get( key, def, version )
 
 		// Not existing, storing it
 		if (!value[key] || JSON.parse(value[key])._version !== version) {
+			def._key = key;
 			save( def );
 			return;
 		}

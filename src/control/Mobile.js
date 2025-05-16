@@ -1,7 +1,9 @@
 import Camera from "../render/Camera";
 import Mouse from "./MouseEventHandler";
 import Events from "../utils/Events";
-
+import FileManager from "../network/FileManager";
+import Session from "../utils/SessionStorage";
+import KEYS from "../control/KeyEventHandler";
 
 var Mobile = {};
 var _processGesture = false;
@@ -92,16 +94,17 @@ var onTouchStart = function onTouchStartClosure()
 
 	return function onTouchStart(event)
 	{
+		
 		remoteAutoFocus();
-		_touches = event.originalEvent.touches;
-		event.stopImmediatePropagation();
+		_touches = event.touches;
+		event.preventDefault();
 
 		// Delayed click (to detect gesture)
 		if (_timer > -1) {
 			Events.clearTimeout(_timer);
 			_timer = -1;
 		}
-
+		
 		// Gesture
 		if (_touches.length > 1) {
 			_scale          = touchDistance(_touches);
@@ -146,8 +149,8 @@ function onTouchEnd(event)
 
 function onTouchMove(event)
 {
-	event.stopImmediatePropagation();
-	var touches = event.originalEvent.touches;
+	event.preventDefault();
+	var touches = event.touches;
 	Mouse.screen.x = touches[0].pageX;
 	Mouse.screen.y = touches[0].pageY;
 	if (!_processGesture) {
@@ -181,8 +184,8 @@ function onTouchMove(event)
 // }
 
 
-window.addEventListener('touchstart', onTouchStart);
+window.addEventListener('touchstart', onTouchStart, { passive: false });
 window.addEventListener('touchend', onTouchEnd); 
-window.addEventListener('touchmove', onTouchMove);
+window.addEventListener('touchmove', onTouchMove, { passive: false });
 
 export default Mobile;

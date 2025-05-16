@@ -13,10 +13,11 @@ import MemoryManager from '../utils/MemoryManager.js';
 import Session from '../utils/SessionStorage.js';
 import EntityManager from './EntityManager.js';
 import Mouse from '../control/MouseEventHandler.js'
+import Effects from './map/Effects.js';
 // import Sky from './Effects/Sky.js';
-// import SpriteRenderer from './SpriteRenderer.js';
-// import Damage from './Effects/Damage.js';
-// import EffectManager from './EffectManager.js';
+import SpriteRenderer from './SpriteRenderer.js';
+import Damage from './effects/Damage.js';
+import EffectManager from './EffectManager.js';
 
 var MapRenderer = {};
 MapRenderer.currentMap = '';
@@ -131,7 +132,7 @@ function onGroundComplete( data )
 
 		MapRenderer.effects[i].tick    = 0;
 
-		// Effects.add(MapRenderer.effects[i]);
+		Effects.add(MapRenderer.effects[i]);
 	}
 
 	MapRenderer.effects.length = 0;
@@ -155,13 +156,13 @@ function onMapComplete( success, error )
 
 	BGM.play((mapInfo && mapInfo.mp3) || '01.mp3');
 
-	// MapRenderer.fog.exist = !!(mapInfo && mapInfo.fog);
-	// if (MapRenderer.fog.exist) {
-	// 	MapRenderer.fog.near   = mapInfo.fog.near * 240;
-	// 	MapRenderer.fog.far    = mapInfo.fog.far  * 240;
-	// 	MapRenderer.fog.factor = mapInfo.fog.factor;
-	// 	MapRenderer.fog.color.set( mapInfo.fog.color );
-	// }
+	MapRenderer.fog.exist = !!(mapInfo && mapInfo.fog);
+	if (MapRenderer.fog.exist) {
+		MapRenderer.fog.near   = mapInfo.fog.near * 240;
+		MapRenderer.fog.far    = mapInfo.fog.far  * 240;
+		MapRenderer.fog.factor = mapInfo.fog.factor;
+		MapRenderer.fog.color.set( mapInfo.fog.color );
+	}
 
 	// Initialize renderers
 	Renderer.init();
@@ -170,14 +171,13 @@ function onMapComplete( success, error )
 	// Sky.setUpCloudData();
 
 	// Display game
-	MapRenderer.loading = false;
 	Mouse.intersect     = true;
 	Renderer.render( MapRenderer.onRender );
 
-	// SpriteRenderer.init(gl);
+	SpriteRenderer.init(gl);
 	// Sky.init( gl, worldResource );
-	// Damage.init(gl);
-	// EffectManager.init(gl);
+	Damage.init(gl);
+	EffectManager.init(gl);
 	MapRenderer.onLoad();
 }
 
@@ -202,7 +202,7 @@ MapRenderer.onRender = function OnRender( tick, gl )
 	projection = Camera.projection;
 	normalMat  = Camera.normalMat;
 
-	// Effects.spam( Session.Entity.position, tick);
+	Effects.spam( Session.Entity.position, tick);
 
 	Ground.render(gl, modelView, projection, normalMat, fog, light );
 	Models.render(gl, modelView, projection, normalMat, fog, light );
@@ -218,18 +218,18 @@ MapRenderer.onRender = function OnRender( tick, gl )
 
 	// Display zone effects and entities
 	// Sky.render( gl, modelView, projection, fog, tick );
-	// EffectManager.render( gl, modelView, projection, fog, tick, true);
+	EffectManager.render( gl, modelView, projection, fog, tick, true);
 
 	//Render Entities (no effects)
 	EntityManager.render( gl, modelView, projection, fog, false );
 
 	// Rendering water
-	// Water.render( gl, modelView, projection, fog, light, tick );
+	Water.render( gl, modelView, projection, fog, light, tick );
 
 	// Rendering effects
-	// Damage.render( gl, modelView, projection, fog, tick );
-	// EffectManager.render( gl, modelView, projection, fog, tick, false);
-	// EntityManager.render( gl, modelView, projection, fog, true );
+	Damage.render( gl, modelView, projection, fog, tick );
+	EffectManager.render( gl, modelView, projection, fog, tick, false);
+	EntityManager.render( gl, modelView, projection, fog, true );
 
 	// Play sounds
 	// Sounds.render( Session.Entity.position, tick );

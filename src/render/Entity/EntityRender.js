@@ -5,9 +5,8 @@ import Ground from '../map/Ground.js';
 import Altitude from '../map/Altitude.js';
 import Session from '../../utils/SessionStorage.js';
 import JobId from '../../configs/DBManager.js';
-import glMatrix from '../../utils/gl-matrix.js';
+import * as glMatrix from 'gl-matrix';
 import FileManager from '../../network/FileManager.js';
-var _last_body_dir = 0;
 
 function render( modelView, projection )
 {
@@ -24,13 +23,13 @@ function render( modelView, projection )
 	this.boundingRect.y2 =  Infinity;
 
 	// Render it only if visible
-	// if (this.effectColor[3]) {
+	if (this.effectColor[3]) {
 		this.renderEntity();
-		// this.attachments.render(Renderer.tick);
-	// }
+		this.attachments.render(Renderer.tick);
+	}
 
 	// Update character UI (life, dialog, etc.)
-	// renderGUI( this, modelView, projection );
+	renderGUI( this, modelView, projection );
 }
 
 var renderGUI = function renderGUIClosure()
@@ -71,12 +70,12 @@ var renderGUI = function renderGUIClosure()
 
 		// Display UI
 		if (entity.life.display)	entity.life.render( _matrix );
-		if (entity.emblem.display)  entity.emblem.render( _matrix );
+		// if (entity.emblem.display)  entity.emblem.render( _matrix );
 		if (entity.display.display) entity.display.render( _matrix );
-		if (entity.dialog.display)  entity.dialog.render( _matrix );
-		if (entity.cast.display)	entity.cast.render( _matrix );
-		if (entity.room.display)	entity.room.render( _matrix );
-		if (entity.signboard.display)	entity.signboard.render( _matrix );
+		// if (entity.dialog.display)  entity.dialog.render( _matrix );
+		// if (entity.cast.display)	entity.cast.render( _matrix );
+		// if (entity.room.display)	entity.room.render( _matrix );
+		// if (entity.signboard.display)	entity.signboard.render( _matrix );
 	};
 }();
 

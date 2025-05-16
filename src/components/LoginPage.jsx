@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './LoginPage.css';
 import Login from '../network/Login.js';
 import Popup from './Popup.jsx';
-import Session from '../utils/SessionStorage.js';
 const LoginPage = (prop) => {
 
   const [loginData, setLoginData] = useState({

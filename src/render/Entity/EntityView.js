@@ -95,7 +95,6 @@ function UpdateBody( job )
 		this.files.body.act = null;
 		return;
 	}
-
 	this.files.body.act = path + '.act';
 	this.files.body.spr = path + '.spr';
 	this.bodypalette = this._bodypalette;
@@ -129,7 +128,11 @@ function UpdateHead( head)
 {
 	var path;
 
-	if (head < 0) {
+	if (head < 0 ) {
+		return;
+	}
+
+	if (this.objecttype != Entity.TYPE_PC) {
 		return;
 	}
 

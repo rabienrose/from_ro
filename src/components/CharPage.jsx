@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./CharPage.css";
 import LoadingPage from "./LoadingPage";
 import StringParser from "../utils/StringParser";
-import Char from "../network/Char.js";
 import Model from "../widget/Model";
 import InputBox from "../widget/InputBox";
 

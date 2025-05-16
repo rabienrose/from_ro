@@ -1,4 +1,5 @@
-import glMatrix from '../utils/gl-matrix.js';
+import * as glMatrix from 'gl-matrix';
+import { translateZ_m4, toInverseMat3_m4 } from '../utils/glm_ex.js';
 import Preferences from '../configs/Preferences.js';
 import DB from '../configs/DBManager.js';
 import MapRenderer from './MapRenderer.js';
@@ -345,14 +346,14 @@ Camera.update = function Update( tick )
 	Camera.direction    = Math.floor( ( Camera.angle[1] + 22.5 ) / 45 ) % 8;
 	var matrix = Camera.modelView;
 	mat4.identity( matrix );
-	mat4.translateZ( matrix, (Camera.altitudeFrom - Camera.zoom) / 2);
+	translateZ_m4( matrix, (Camera.altitudeFrom - Camera.zoom) / 2);
 	mat4.rotateX( matrix, matrix, Camera.angle[0] / 180 * Math.PI );
 	mat4.rotateY( matrix, matrix, Camera.angle[1] / 180 * Math.PI );
 	_position[0] = Camera.position[0] - 0.5;
 	_position[1] = Camera.position[2] + zOffset;
 	_position[2] = Camera.position[1] - 0.5;
 	mat4.translate( matrix, matrix, _position );
-	mat4.toInverseMat3(matrix, Camera.normalMat);
+	toInverseMat3_m4(matrix, Camera.normalMat);
 	mat3.transpose(Camera.normalMat, Camera.normalMat);
 };
 
