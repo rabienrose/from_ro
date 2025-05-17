@@ -23,7 +23,8 @@
     "globals": "^16.0.0",
     "mysql2": "^3.14.1",
     "terser-webpack-plugin": "^5.3.14",
-    "vite": "^6.3.1"
+    "vite": "^6.3.1",
+    "@chicowall/grf-loader": "^1.0.4"
   },
   "dependencies": {
     "gl-matrix": "^3.4.3",
