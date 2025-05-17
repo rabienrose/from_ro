@@ -391,7 +391,7 @@ EffectManager.spamEffect = function spamEffect(Params) {
 	//Start and End
 	Params.Inst.startTick = Params.Inst.startTick + (Params.Inst.noDelay ? Params.Inst.delayOffset + Params.Inst.delayLate : 0);
 	Params.Inst.endTick   = Params.Inst.duration > 0 ? Params.Inst.startTick + (Params.Inst.noDelay ? Params.Inst.delayOffset : 0) + Params.Inst.duration : -1;
-	console.log("Params.effect.type:", Params.effect.type);
+	
 	switch (Params.effect.type) {
 		case 'SPR':
 			spamSprite(Params);
@@ -415,10 +415,12 @@ EffectManager.spamEffect = function spamEffect(Params) {
 
 		case 'RSM':
 		case 'RSM2':
+			console.log("not implemented: ", Params.effect.type);
 			// EffectManager.add(new RsmEffect(Params), Params);
 			break;
 
 		case 'QuadHorn':
+			console.log("not implemented: ", Params.effect.type);
 			// EffectManager.add(new QuadHorn(Params.effect, Params.Inst, Params.Init), Params);
 			break;
 

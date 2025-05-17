@@ -83,6 +83,7 @@ function onProgressUpdate( percent )
 
 function onWorldComplete( data )
 {
+	MapRenderer.setProgress(0.5);
 	MapRenderer.light   = data.light;
 	MapRenderer.water   = data.water;
 	MapRenderer.sounds  = data.sound;
@@ -100,6 +101,7 @@ function onWorldComplete( data )
 
 function onGroundComplete( data )
 {
+	MapRenderer.setProgress(0.6);
 	var gl = Renderer.getContext();
 
 	MapRenderer.water.mesh      = data.waterMesh;
@@ -141,20 +143,23 @@ function onGroundComplete( data )
 
 function onAltitudeComplete( data )
 {	
+	MapRenderer.setProgress(0.4);
 	Altitude.init( data );
 }
 
 function onModelsComplete( data )
 {
+	MapRenderer.setProgress(0.7);
 	Models.init( Renderer.getContext(), data );
 }
 
 function onMapComplete( success, error )
 {
+	MapRenderer.setProgress(0.8);
 	var worldResource = MapRenderer.currentMap.replace(/\.gat$/i, '.rsw');
 	var mapInfo       = DB.getMap(worldResource);
 
-	BGM.play((mapInfo && mapInfo.mp3) || '01.mp3');
+	BGM.play(mapInfo && mapInfo.mp3);
 
 	MapRenderer.fog.exist = !!(mapInfo && mapInfo.fog);
 	if (MapRenderer.fog.exist) {
@@ -177,7 +182,8 @@ function onMapComplete( success, error )
 	SpriteRenderer.init(gl);
 	// Sky.init( gl, worldResource );
 	Damage.init(gl);
-	EffectManager.init(gl);
+	EffectManager.init(gl)
+	MapRenderer.setProgress(0.9);
 	MapRenderer.onLoad();
 }
 

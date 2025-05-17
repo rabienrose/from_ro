@@ -624,6 +624,7 @@ DB.WeaponType={
 	TWOHANDMACE:            9,
 	ROD:                   10,
 	BOW:                   11,
+	MAX:                    12
 }
 
 var WeaponNameTable = {};
@@ -680,6 +681,11 @@ WeaponSoundTable[DB.WeaponType.BOW]                   = ["attack_bow1.wav", "att
 var MapInfo = {}
 MapInfo["cmd_fild03.rsw"] = {
 	"mp3":"63.mp3",
+	"isIndoor":false
+}
+
+MapInfo["prt_fild06.rsw"] = {
+	"mp3":"12.mp3",
 	"isIndoor":false
 }
 

@@ -115,7 +115,7 @@ function walkProcess()
 
 	if(total == 0)
 		return;
-
+	
 	if (this.action === this.ACTION.WALK || this.objecttype === this.constructor.TYPE_FALCON || this.objecttype === this.constructor.TYPE_WUG) {
 
 		if (index < total) {
@@ -188,7 +188,6 @@ function walkProcess()
 				repeat: true
 			});
 		}
-
 		this.onWalkEnd();
 
 		// Temporary callback

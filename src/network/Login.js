@@ -2,6 +2,7 @@ import Network from '../network/NetworkManager.js';
 import PACKET from '../network/PacketStructure.js';
 import Session from '../utils/SessionStorage.js';
 import Sound from '../audio/SoundManager.js';
+import Globals from "../utils/Globals.js"
 
 var login_cb = null;
 function onConnectionAccepted( pkt )
@@ -77,7 +78,7 @@ function onConnectionRequest( username, password, _login_cb )
   Network.hookPacket( PACKET.AC.REFUSE_LOGIN,    onConnectionRefused );
   Network.hookPacket( PACKET.SC.NOTIFY_BAN,      onServerClosed );
   Sound.play('click_sound.wav');
-  const address = "113.54.199.228" 
+  const address = Globals.root_ip
   const port = 6900
   Network.connect( address, port, function( success ) {
     if ( !success ) {

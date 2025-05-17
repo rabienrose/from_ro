@@ -13,6 +13,16 @@ var mediaPlayerCount = 0;
 var SoundManager = {};
 SoundManager.volume = 1;
 
+var play_sound=function(audio){
+	audio.play()
+	.then(
+		() => {
+		},
+		() => {
+		}
+	)
+}
+
 SoundManager.play = function play( filename, vol ) {
 	var volume;
 	
@@ -35,7 +45,7 @@ SoundManager.play = function play( filename, vol ) {
 	if (sound) {
 		sound.volume  = Math.min(volume,1.0);
 		sound._volume = volume;
-		sound.play();
+		play_sound(sound);
 		_sounds[filename].instances.push(sound);
 		_sounds[filename].lastTick = Date.now();
 		return;
@@ -59,7 +69,7 @@ SoundManager.play = function play( filename, vol ) {
 	
 	sound.addEventListener('error', onSoundError, false);
 	sound.addEventListener('ended', onSoundEnded, false);
-	sound.play();
+	play_sound(sound);
 
 	// Add it to the list
 	_sounds[filename].instances.push(sound);

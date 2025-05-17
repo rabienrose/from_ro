@@ -34,7 +34,56 @@ function onEntitySpam(pkt) {
 function onEntityVanish(pkt) {
 	var entity = EntityManager.get(pkt.GID);
 	if (entity) {
+		if (entity.objecttype === Entity.TYPE_PC && pkt.GID === Session.Entity.GID) {  //death animation only for myself
+			var EF_Init_Par = {
+				effectId: EffectConst.EF_DEVIL,
+				ownerAID: entity.GID
+			};
+			EffectManager.spam(EF_Init_Par);
+		}
+
+		switch (pkt.type) {
+			case Entity.VT.EXIT:
+			case Entity.VT.TELEPORT:
+				if (!(entity._effectState & StatusState.EffectState.INVISIBLE)) {
+
+					var EF_Init_Par = { position: entity.position };
+
+					if (PACKETVER.value < 20030715) {
+						EF_Init_Par.effectId = EffectConst.EF_TELEPORTATION;
+					} else {
+						EF_Init_Par.effectId = EffectConst.EF_TELEPORTATION2;
+					}
+					EffectManager.spam(EF_Init_Par);
+				}
+				if (entity.falcon) {
+					entity.falcon.remove(pkt.type);
+					entity.falcon = null;
+				} else if (entity.wug) {
+					entity.wug.remove(pkt.type);
+					entity.wug = null;
+				}
+
+			case Entity.VT.OUTOFSIGHT:
+				EffectManager.remove(null, pkt.GID, null);
+				if (entity.falcon) {
+					entity.falcon.remove(pkt.type);
+					entity.falcon = null;
+				} else if (entity.wug) {
+					entity.wug.remove(pkt.type);
+					entity.wug = null;
+				}
+
+			case Entity.VT.DEAD:
+				// remove aura on non-PC death
+				if (entity.objecttype !== Entity.TYPE_PC) {
+					// entity.aura.remove(EffectManager);
+				}
+		}
 		entity.remove(pkt.type);
+	}
+	if (pkt.GID === Session.Entity.GID && pkt.type === 1) {
+		
 	}
 }
 
@@ -220,7 +269,6 @@ function onEntityWillBeHitSub(pkt, dstEntity) {
 }
 
 function onEntityAction(pkt) {
-	console.log("onEntityAction: ", pkt);
 	var srcEntity = EntityManager.get(pkt.GID);
 	// Entity out of the screen ?
 	if (!srcEntity) {
@@ -317,6 +365,7 @@ function onEntityAction(pkt) {
 				}
 				if (weaponSoundRelease) {
 					Events.setTimeout(function () {
+						
 						Sound.play(weaponSoundRelease);
 					}, (pkt.attackMT * 0.25) + C_MULTIHIT_DELAY);
 				}
@@ -334,8 +383,6 @@ function onEntityAction(pkt) {
 					}, (pkt.attackMT * 0.25) + (C_MULTIHIT_DELAY * 1.75));
 				}
 			}
-
-
 			if (dstEntity) {
 				// only if damage and do not have endure
 				// and damage isn't absorbed (healing)
@@ -359,7 +406,6 @@ function onEntityAction(pkt) {
 								ownerAID: pkt.targetGID,
 								startTick: Renderer.tick + pkt.attackMT,
 							};
-							console.log("EF_Init_Par: ", EF_Init_Par);
 							EffectManager.spam(EF_Init_Par);
 						}
 					}
@@ -527,7 +573,26 @@ function onEntityEmotion(pkt) {
 	}
 }
 
-export default function Net() {
+function onNotifyExp(pkt) {
+	switch (pkt.expType) {
+		case 0:
+			if (pkt.varID === 1) {
+				// ChatBox.addText(DB.getMessage(1613).replace('%d', pkt.amount), ChatBox.TYPE.INFO, ChatBox.FILTER.EXP);
+			} else if (pkt.varID === 2) {
+				// ChatBox.addText(DB.getMessage(1614).replace('%d', pkt.amount), ChatBox.TYPE.INFO, ChatBox.FILTER.EXP);
+			}
+			break;
+		case 1:
+			if (pkt.varID === 1) {
+				// ChatBox.addText('Experience gained from Quest, Base:' + pkt.amount, null, ChatBox.FILTER.EXP, '#A442DC');
+			} else if (pkt.varID === 2) {
+				// ChatBox.addText('Experience gained from Quest, Job:' + pkt.amount, null, ChatBox.FILTER.EXP, '#A442DC');
+			}
+			break;
+	}
+}
+
+export default function EntityNet() {
 	Network.hookPacket(PACKET.ZC.NOTIFY_NEWENTRY8, onEntitySpam);
 	Network.hookPacket(PACKET.ZC.NOTIFY_MOVEENTRY8, onEntitySpam);
 	Network.hookPacket(PACKET.ZC.NOTIFY_STANDENTRY8, onEntitySpam);
@@ -537,5 +602,6 @@ export default function Net() {
 	Network.hookPacket(PACKET.ZC.ACK_REQNAME, onEntityIdentity);
 	Network.hookPacket(PACKET.ZC.USESKILL_ACK2, onEntityCastSkill);
 	Network.hookPacket(PACKET.ZC.EMOTION, onEntityEmotion);
+	Network.hookPacket(PACKET.ZC.NOTIFY_EXP, onNotifyExp);
 
 };

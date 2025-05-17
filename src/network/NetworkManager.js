@@ -21,7 +21,7 @@ var Network = {};
 
 Network.connect = function( host, port, callback)
 {
-	var proxy = "ws://"+Globals.root_ip+":443/";
+	var proxy = "ws://127.0.0.1:443/";
 	_socket = new WebSocket(host, port, proxy, 
 		(success)=>{
 			var msg   = 'Fail';
@@ -47,8 +47,9 @@ Network.connect = function( host, port, callback)
 
 Network.sendPacket = function( Packet )
 {
+	
 	var pkt = Packet.build();
-	if(Network.packetDump) {
+	if(packetDump) {
 		let fp = new BinaryReader( pkt.buffer );
 		let id = fp.readUShort()
 		console.log("%c[Network] Dump Send: \n%cPacket ID: 0x%s\nPacket Name: %s\nLength: %d\nContent:\n%s", 

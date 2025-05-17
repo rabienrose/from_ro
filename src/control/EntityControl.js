@@ -109,14 +109,14 @@ function onFocus()
 		case Entity.TYPE_UNIT:
 		case Entity.TYPE_NPC_ABR:
 		case Entity.TYPE_NPC_BIONIC:
-			// this.attachments.add({
-			// 	uid:    'lockon',
-			// 	spr:    'data/sprite/cursors.spr',
-			// 	act:    'data/sprite/cursors.act',
-			// 	frame:   Cursor.ACTION.LOCK,
-			// 	repeat:  true,
-			// 	depth:   10.0,
-			// });
+			this.attachments.add({
+				uid:    'lockon',
+				spr:    '/resources/sprite/cursors.spr',
+				act:    '/resources/sprite/cursors.act',
+				frame:   3,
+				repeat:  true,
+				depth:   10.0,
+			});
 
 			if(!Session.TouchTargeting && !Session.autoFollow){
 				var out   = [];
@@ -139,7 +139,6 @@ function onFocus()
 				pkt        = new PACKET.CZ.REQUEST_ACT();
 				pkt.action    = 7;
 				pkt.targetGID = this.GID;
-
 				if (count < 2) {
 					Network.sendPacket(pkt);
 					return true;

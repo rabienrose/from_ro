@@ -327,6 +327,26 @@ Entity.prototype.set = function Set( unit )
 
 Entity.prototype.clean = function Clean()
 {
+	this.life.clean();
+	// this.emblem.clean();
+	this.display.clean();
+	// this.dialog.clean();
+	// this.cast.clean();
+	// this.room.clean();
+	this.attachments.remove('lockon');
+	this.animations.free();
+	// this.aura.free();
+	// this.dropEffect.free();
+	// this.signboard.clean();
+
+	// Remove
+	this.remove_tick  = 0;
+	this.remove_delay = 0;
+
+	this.falcon = null;
+	this.wug = null;
+	// Aviod conflict if entity re-appears. Official sets it to -1
+	this.GID += Math.random();
 
 };
 

@@ -19,6 +19,8 @@ const App = () => {
     console.log(`start at ${getCurrentTime()}`);
     import("./network/AutoNewUser.js").then(module => {
       console.log(`loaded at ${getCurrentTime()}`);
+      setProgress(0);
+      module.default.setProgress=setProgress;
       module.default.onEnterMap=()=>{
         console.log("onMapChange at", getCurrentTime());
         setShowLoading(false); 
@@ -27,7 +29,6 @@ const App = () => {
     });
     setShowLoading(true);
   }, []);
-
   return (
     <div id="app-container">
       {showLoading && <LoadingPage progress={progress} />}

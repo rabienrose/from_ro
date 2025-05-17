@@ -60,7 +60,6 @@ function setAction( option )
 				option.action = this.ACTION.ATTACK1;
 			}
 		}
-
 		this.action = option.action === -1 || typeof option.action === 'undefined' ? this.ACTION.IDLE : option.action;
 		anim.tick   = Renderer.tick + 0;
 		anim.delay  = 0;

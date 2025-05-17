@@ -1,4 +1,6 @@
-
+import Preferences from '../configs/Preferences.js';
+import Global from '../utils/Globals.js';
+import Events from '../utils/Events.js';
 var BGM = {};
 
 BGM.stat        = 0;
@@ -8,7 +10,7 @@ BGM.volume      = 1;
 BGM.isPlaying   = 'false';
 BGM.audio       = document.createElement('audio');
 BGM.isInit      = false;
-BGM.muted       = true;
+BGM.muted       = !Preferences.Audio.BGM.play;
 
 BGM.initHTML5 = function initHTML5()
 {
@@ -45,18 +47,33 @@ BGM.play = function play( filename )
 		this.filename = filename;
 	}
 
-	BGM.load('resources/bgm/' + filename);
+	BGM.load( "http://" + Global.root_ip + ':8002/resources/bgm/' + filename);
 };
 
-BGM.load = function load(url)
+BGM.delay_play = function delay_play()
+{
+	Events.setTimeout(
+		()=>{
+			BGM.audio.play().then(
+				() => {
+				},
+				() => {
+					BGM.delay_play();
+				}
+			);
+		}, 
+		1000
+	);
+}
+
+BGM.load = function load(url_str)
 {
 	if (BGM.muted) {
 		return;
 	}
-	console.log(url);
-	BGM.audio.src    = url;
+	BGM.audio.src    =url_str;
 	BGM.audio.volume = this.volume;
-	BGM.audio.play();
+	BGM.delay_play();
 };
 
 BGM.stop = function stop()

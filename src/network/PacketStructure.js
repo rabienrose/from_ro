@@ -783,4 +783,72 @@ PACKET.ZC.NOTIFY_STANDENTRY8 = function PACKET_ZC_NOTIFY_STANDENTRY8(fp, end) {
 };
 PACKET.ZC.NOTIFY_STANDENTRY8.size = -1;
 
+// 0x139
+PACKET.ZC.ATTACK_FAILURE_FOR_DISTANCE = function PACKET_ZC_ATTACK_FAILURE_FOR_DISTANCE(fp, end) {
+	this.targetAID = fp.readULong();
+	this.targetXPos = fp.readShort();
+	this.targetYPos = fp.readShort();
+	this.xPos = fp.readShort();
+	this.yPos = fp.readShort();
+	this.currentAttRange = fp.readShort();
+};
+PACKET.ZC.ATTACK_FAILURE_FOR_DISTANCE.size = 16;
+
+// 0x7f6
+PACKET.ZC.NOTIFY_EXP = function PACKET_ZC_NOTIFY_EXP(fp, end) {
+	this.AID = fp.readULong();
+	this.amount = fp.readLong();
+	this.varID = fp.readUShort();
+	this.expType = fp.readShort();
+};
+PACKET.ZC.NOTIFY_EXP.size = 14;
+
+// 0xa1
+PACKET.ZC.ITEM_DISAPPEAR = function PACKET_ZC_ITEM_DISAPPEAR(fp, end) {
+	this.ITAID = fp.readULong();
+};
+PACKET.ZC.ITEM_DISAPPEAR.size = 6;
+
+// 0x1de
+PACKET.ZC.NOTIFY_SKILL2 = function PACKET_ZC_NOTIFY_SKILL2(fp, end) {
+	this.SKID = fp.readUShort();
+	this.AID = fp.readULong();
+	this.targetID = fp.readULong();
+	this.startTime = fp.readULong();
+	this.attackMT = fp.readLong();
+	this.attackedMT = fp.readLong();
+	this.damage = fp.readLong();
+	this.level = fp.readShort();
+	this.count = fp.readShort();
+	this.action = fp.readUChar();
+};
+PACKET.ZC.NOTIFY_SKILL2.size = 33;
+
+// 0x84b
+PACKET.ZC.ITEM_FALL_ENTRY2 = function PACKET_ZC_ITEM_FALL_ENTRY2(fp, end) {
+	this.ITAID = fp.readULong();
+	this.ITID = fp.readUShort();
+	this.type = fp.readUShort();
+	this.IsIdentified = fp.readUChar();
+	this.xPos = fp.readShort();
+	this.yPos = fp.readShort();
+	this.subX = fp.readUChar();
+	this.subY = fp.readUChar();
+	this.count = fp.readShort();
+};
+PACKET.ZC.ITEM_FALL_ENTRY2.size = 19;
+
+// 0xb2
+PACKET.CZ.RESTART = function PACKET_CZ_RESTART() {
+	this.type = 0;
+};
+PACKET.CZ.RESTART.prototype.build = function() {
+	var pkt_len = 2 + 1;
+	var pkt_buf = new BinaryWriter(pkt_len);
+
+	pkt_buf.writeShort(0xb2);
+	pkt_buf.writeUChar(this.type);
+	return pkt_buf;
+};
+
 export default PACKET;

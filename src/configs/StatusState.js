@@ -17,7 +17,8 @@ var StatusConst ={
 	SLOWPOISON:							14,
 	IMPOSITIO:							15,
 	SUFFRAGIUM:							16,
-	ASPERSIO:							17
+	ASPERSIO:							17,
+	MAX:									18
 }
 
 export default {

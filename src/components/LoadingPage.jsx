@@ -16,7 +16,7 @@ const LoadingPage = ({
       <div className="loading-wrapper">
         <div className="loading-title">加载中...</div>
         <div className="progress-bar-container">
-          <div className="progress-bar-fill" style={{width: `${progress}%`}}></div>
+          <div className="progress-bar-fill" style={{width: `${progress*100}%`}}></div>
         </div>
       </div>
     </div>

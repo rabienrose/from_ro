@@ -9,23 +9,12 @@ MapLoader.map_root = '/resources/maps/';
 MapLoader.texture_root = '/resources/texture/';
 MapLoader.model_root = '/resources/model/';
 
-MapLoader.setProgress = function setProgress( percent ){
-	var progress = Math.min(100, Math.floor(percent));
-	if (progress !== MapLoader.progress) {
-		if (MapLoader.onprogress) {
-			MapLoader.onprogress(progress);
-		}
-		MapLoader.progress = progress;
-	}
-};
-
 MapLoader.load = function Load( mapname ){
 	if (DB.MapAlias[mapname]) {
 		mapname = DB.MapAlias[mapname];
 	}
 	MapLoader.fileCount = 0;
 	MapLoader.offset = 0;
-	MapLoader.setProgress( 0 );
 	var world;
 	function getFilePath( path ) {
 		if (path in FileManager.filesAlias) {
@@ -39,19 +28,16 @@ MapLoader.load = function Load( mapname ){
 	FileManager.load(MapLoader.map_root + getFilePath(mapname))
 	.then((res) => {
 		world = res;
-		MapLoader.setProgress( 1 );
 		return FileManager.load(MapLoader.map_root + getFilePath(world.files.gat));
 	})
 	.then((res) => {
 		altitude = res;
-		MapLoader.setProgress( 2 );
 		altitude.compile();
 		MapLoader.MAP_ALTITUDE(altitude);
 		return FileManager.load(MapLoader.map_root + getFilePath(world.files.gnd));
 	})
 	.then((res) => {
 		ground=res;
-		MapLoader.setProgress( 3 );
 		if (ground && ground.version >= 1.8) {
 			world.water = ground.water;
 		}
@@ -79,14 +65,12 @@ MapLoader.load = function Load( mapname ){
 			return FileManager.load(filename);
 		});
 		Promise.all(promises_water).then((res) => {
-			MapLoader.setProgress(4);
 			world.water.images = res;
 			MapLoader.MAP_WORLD(world.compile());
 		})
 		.then(() => {
 			return Promise.all(promises).then(
 				(res) => {
-					MapLoader.setProgress(4);
 					compiledGround.textures = res;
 					MapLoader.MAP_GROUND(compiledGround);
 				}, 
@@ -116,7 +100,6 @@ MapLoader.load = function Load( mapname ){
 			})
 		});
 		return Promise.all(promises).then((res) => {
-			MapLoader.setProgress(5);
 			var filenames=res.map(r=>r.filename);
 			var objects=res.map(r=>r.result);
 			var i, count, pos;
@@ -161,7 +144,6 @@ MapLoader.compileModels = function CompileModels( objects )
 				bufferSize += meshes[index].length;
 			}
 		}
-		MapLoader.setProgress( progress + (100-progress) / count * (i+1) / 2 );
 	}
 	MapLoader.mergeMeshes( models, bufferSize);
 };
@@ -226,7 +208,6 @@ MapLoader.mergeMeshes = function MergeMeshes( objects, bufferSize )
 		return promise;
 	});
 	return Promise.all(promises).then((res) => {
-		MapLoader.setProgress(7);
 		var i, count, pos;
 		var filenames=res.map(r=>r.filename);
 		for (i = 0, count = infos.length; i < count; ++i) {

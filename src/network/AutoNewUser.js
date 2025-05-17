@@ -20,6 +20,7 @@ var temp_username = "";
 AutoNewUser.connected=false;
 
 AutoNewUser.start=function(){
+  AutoNewUser.setProgress(0.1);
   Renderer.init(); 
   BGM.initHTML5();  
   const savedUsername = localStorage.getItem('username');
@@ -35,12 +36,14 @@ AutoNewUser.start=function(){
   var password = 1;
 
   var char_in_map_cb=()=>{
+    AutoNewUser.setProgress(0.2);
     Map.onEnterMap=AutoNewUser.onEnterMap;
+    Map.setProgress=AutoNewUser.setProgress;
     Map.init();
   }
 
   var create_succ_cb=(pkg)=>{
-    
+    AutoNewUser.setProgress(0.8);
     let entity = new Entity();
     entity._sex = Session.Sex;
     entity.set(pkg.charinfo)

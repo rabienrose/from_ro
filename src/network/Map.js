@@ -12,16 +12,17 @@ import Renderer from '../render/Renderer.js';
 import Mouse from '../control/MouseEventHandler.js';
 import Altitude from '../render/map/Altitude.js';
 import EntityNet from './EntityNet.js';
+import ENUM_StatusProperty from '../configs/StatusProperty.js';
 
 
-var MapEngine = {};
+var Map = {};
 var _isInitialised=false;
 var _mapName = "";
 var _walkTimer = null;
 var _walkLastTick = 0;
 
 
-MapEngine.init = function init()
+Map.init = function init()
 {
 	_mapName = Session.ServerChar.mapName;
 	var ip = Network.utilsLongToIP( Session.ServerChar.ip );
@@ -70,11 +71,178 @@ MapEngine.init = function init()
 		Network.hookPacket( PACKET.ZC.ACCEPT_ENTER2,       onConnectionAccepted );
 		Network.hookPacket( PACKET.ZC.NOTIFY_PLAYERMOVE,           onPlayerMove );
 		Network.hookPacket( PACKET.ZC.PAR_CHANGE,                  onParameterChange );
+		Network.hookPacket( PACKET.ZC.LONGPAR_CHANGE,              onParameterChange );
+		Network.hookPacket( PACKET.ZC.COUPLESTATUS,                onParameterChange );
 		Network.hookPacket( PACKET.ZC.NOTIFY_TIME,         onPong );
+		Network.hookPacket( PACKET.ZC.ATTACK_FAILURE_FOR_DISTANCE, onPlayerTooFarToAttack );
+		Network.hookPacket(PACKET.ZC.NOTIFY_SKILL2, onEntityUseSkillToAttack);
 		EntityNet.call();
 
 	}
 };
+
+function onEntityUseSkillToAttack(pkt) {
+
+	return;
+	var SkillAction = {};	//Corresponds to e_damage_type in clif.hpp
+	SkillAction.NORMAL = 0;	/// damage [ damage: total damage, div: amount of hits, damage2: assassin dual-wield damage ]
+	SkillAction.PICKUP_ITEM = 1;	/// pick up item
+	SkillAction.SIT_DOWN = 2;	/// sit down
+	SkillAction.STAND_UP = 3;	/// stand up
+	SkillAction.ENDURE = 4;	/// damage (endure)
+	SkillAction.SPLASH = 5;	/// (splash?)
+	SkillAction.SKILL = 6;	/// (skill?)
+	SkillAction.REPEAT = 7;	/// (repeat damage?)
+	SkillAction.MULTI_HIT = 8;	/// multi-hit damage
+	SkillAction.MULTI_HIT_ENDURE = 9;	/// multi-hit damage (endure)
+	SkillAction.CRITICAL = 10;	/// critical hit
+	SkillAction.LUCY_DODGE = 11;	/// lucky dodge
+	SkillAction.TOUCH = 12;	/// (touch skill?)
+	SkillAction.MULTI_HIT_CRITICAL = 13;	/// multi-hit critical
+
+
+	var srcEntity = EntityManager.get(pkt.AID);
+	var dstEntity = EntityManager.get(pkt.targetID);
+	var srcWeapon;
+
+	if (srcEntity) {
+		pkt.attackMT = Math.min(9999, pkt.attackMT); // FIXME: cap value ?
+		pkt.attackMT = Math.max(1, pkt.attackMT);
+		srcEntity.attack_speed = pkt.attackMT;
+
+		srcEntity.amotionTick = Renderer.tick + pkt.attackMT * 2; // Add amotion delay
+
+		srcWeapon = 0;
+		if (srcEntity.weapon) {
+			srcWeapon = srcEntity.weapon;
+		}
+
+		// Don't display skill names for
+		//  - hiding skills
+		//  - non-player or player owned entity
+		//  - skill level < 0
+		//  - skill ID < 0
+		if (!SkillNameDisplayExclude.includes(pkt.SKID)
+			&&
+			(srcEntity.objecttype === Entity.TYPE_PC || srcEntity.objecttype === Entity.TYPE_DISGUISED ||
+				srcEntity.objecttype === Entity.TYPE_PET || srcEntity.objecttype === Entity.TYPE_HOM ||
+				srcEntity.objecttype === Entity.TYPE_MERC || srcEntity.objecttype === Entity.TYPE_ELEM)
+			&&
+			!(pkt.level < 0)
+			&&
+			!(pkt.SKID < 0)
+		) {
+			// srcEntity.dialog.set(((SkillInfo[pkt.SKID] && SkillInfo[pkt.SKID].SkillName) || 'Unknown Skill') + ' !!');
+		}
+
+		//Action handling
+		if (srcEntity.action !== srcEntity.ACTION.DIE && srcEntity.action !== srcEntity.ACTION.SIT) {
+			if (pkt.SKID in SkillActionTable) {
+				var action = SkillActionTable[pkt.SKID];
+				if (action) {
+					srcEntity.setAction(action(srcEntity, Renderer.tick));
+				}
+			} else {
+				srcEntity.setAction(SkillActionTable['DEFAULT'](srcEntity, Renderer.tick));
+			}
+
+			//Pet Talk
+			if (srcEntity.GID === Session.Entity.GID && (Session.pet.friendly > 900 && (Session.pet.lastTalk || 0) + 10000 < Date.now())) {
+				var talkRate = parseInt((Math.random() * 10));
+				if (talkRate < 3) {
+					var hunger = DB.getPetHungryState(Session.pet.oldHungry);
+					var talk = DB.getPetTalkNumber(Session.pet.job, PetMessageConst.PM_HUNTING, hunger);
+
+					var talkPkt = new PACKET.CZ.PET_ACT();
+					talkPkt.data = talk;
+					Network.sendPacket(talkPkt);
+					Session.pet.lastTalk = Date.now();
+				}
+			}
+		}
+
+		if (srcEntity.falcon) {
+			if (pkt.SKID == SkillId.HT_BLITZBEAT || pkt.SKID == SkillId.SN_FALCONASSAULT) {
+				srcEntity.falcon.action = srcEntity.action;
+				srcEntity.falcon.walk.speed = 25;
+
+				srcEntity.falcon.walkToNonWalkableGround(
+					srcEntity.falcon.position[0],
+					srcEntity.falcon.position[1],
+					dstEntity.position[0],
+					dstEntity.position[1],
+					0,
+					true,
+					true,
+				);
+			}
+		}
+
+		if (srcEntity.wug) {
+			if (pkt.SKID == SkillId.RA_WUGSTRIKE || pkt.SKID == SkillId.RA_WUGBITE) {
+				srcEntity.wug.action = srcEntity.action;
+				srcEntity.wug.walk.speed = 35;
+
+				srcEntity.wug.walkToNonWalkableGround(
+					srcEntity.wug.position[0],
+					srcEntity.wug.position[1],
+					dstEntity.position[0],
+					dstEntity.position[1],
+					1,
+					false,
+					true,
+				);
+			}
+		}
+	}
+
+	if (dstEntity) {
+		var target = pkt.damage ? dstEntity : srcEntity;
+
+		if (pkt.damage && target && !(srcEntity == dstEntity && pkt.action == SkillAction.SKILL)) {
+
+			// Will be hit actions
+			onEntityWillBeHitSub(pkt, dstEntity);
+
+			var isCombo = target.objecttype !== Entity.TYPE_PC && pkt.count > 1;
+			var isBlueCombo = SkillBlueCombo.includes(pkt.SKID);
+
+			var addDamage = function (i, startTick) {
+
+				if (pkt.damage) { // Only if hits
+					EffectManager.spamSkillHit(pkt.SKID, pkt.targetID, startTick, pkt.AID);
+				}
+
+				if (!isCombo && isBlueCombo) { // Blue 'crit' non-combo EG: Rampage Blaster that hits
+					Damage.add(pkt.damage / pkt.count, target, startTick, srcWeapon, Damage.TYPE.COMBO_B | ((i + 1) === pkt.count ? Damage.TYPE.COMBO_FINAL : 0));
+				} else {
+					Damage.add(pkt.damage / pkt.count, target, startTick, srcWeapon); // Normal
+				}
+
+				// Only display combo if the target is not entity and
+				// there are multiple attacks and actually hits
+				if (isCombo) {
+					Damage.add(
+						pkt.damage / pkt.count * (i + 1),
+						target,
+						startTick,
+						srcWeapon,
+						(isBlueCombo ? Damage.TYPE.COMBO_B : Damage.TYPE.COMBO) | ((i + 1) === pkt.count ? Damage.TYPE.COMBO_FINAL : 0)
+					);
+				}
+			};
+
+			for (var i = 0; i < pkt.count; ++i) {
+				EffectManager.spamSkillBeforeHit(pkt.SKID, pkt.targetID, Renderer.tick + (C_MULTIHIT_DELAY * i), pkt.AID);
+				addDamage(i, Renderer.tick + pkt.attackMT + (C_MULTIHIT_DELAY * i));
+			}
+		}
+	}
+
+	if (srcEntity && dstEntity && pkt.action != SkillAction.SPLASH) { // && pkt.action != SkillAction.MULTI_HIT
+		EffectManager.spamSkill(pkt.SKID, pkt.targetID, null, Renderer.tick + pkt.attackMT, pkt.AID);
+	}
+}
 
 
 function onDropItem( index, count )
@@ -169,7 +337,6 @@ function walkIntervalProcess()
 			pkt.dest[0] = Mouse.world.x;
 			pkt.dest[1] = Mouse.world.y;
 		}
-
 		Network.sendPacket(pkt);
 	}
 
@@ -178,7 +345,13 @@ function walkIntervalProcess()
 	_walkLastTick = +Renderer.tick;
 }
 
-
+function onPlayerTooFarToAttack( pkt )
+{
+	var entity = EntityManager.get(pkt.targetAID);
+	if (entity) {
+		entity.onFocus();
+	}
+}
 
 function onRequestStopWalk()
 {
@@ -209,7 +382,7 @@ function onPlayerMove( pkt )
 function onConnectionAccepted( pkt )
 {
 	Session.Entity = new Entity( Session.Character );
-	// Session.Entity.onWalkEnd = onWalkEnd;
+	Session.Entity.onWalkEnd = onWalkEnd;
 
 	if ('sex' in pkt && pkt.sex < 2) {
 		Session.Entity.sex = pkt.sex;
@@ -261,9 +434,10 @@ function onMapChange( pkt )
 		Network.sendPacket(
 			new PACKET.CZ.NOTIFY_ACTORINIT()
 		);
-		MapEngine.onEnterMap();
+		Map.onEnterMap();
 	};
 	Renderer.rendering = false;
+	MapRenderer.setProgress=Map.setProgress;
 	MapRenderer.setMap( pkt.mapName );
 }
 
@@ -272,9 +446,22 @@ function onReceiveAccountID( pkt )
 	Session.Character.GID = pkt.AID;
 }
 
+function onRestartRequest()
+{
+	var pkt = new PACKET.CZ.RESTART();
+	pkt.type = 1;
+	Network.sendPacket(pkt);
+}
+
+function onReturnSavePointRequest()
+{
+	var pkt = new PACKET.CZ.RESTART();
+	pkt.type = 0;
+	Network.sendPacket(pkt);
+}
+
 function onParameterChange( pkt )
 {
-	return;
 	var amount = 0, type;
 
 	if (pkt.hasOwnProperty('varID')) {
@@ -305,30 +492,28 @@ function onParameterChange( pkt )
 
 	switch (type) {
 
-		case StatusProperty.SPEED:
+		case ENUM_StatusProperty.ENUM_SPEED:
 			Session.Entity.walk.speed = amount;
 			break;
 
-		case StatusProperty.EXP:
+		case ENUM_StatusProperty.ENUM_EXP:
 			break;
 
-		case StatusProperty.JOBEXP:
+		case ENUM_StatusProperty.ENUM_JOBEXP:
 			break;
 
 		// (not used ?)
-		case StatusProperty.VIRTUE:
-		case StatusProperty.HONOR:
+		case ENUM_StatusProperty.ENUM_VIRTUE:
+		case ENUM_StatusProperty.ENUM_HONOR:
 			break;
 
-		case StatusProperty.HP:
+		case ENUM_StatusProperty.ENUM_HP:
 			Session.Entity.life.hp = amount;
 			Session.Entity.life.update();
 
 			if (Session.Entity.life.hp_max > -1) {
-				BasicInfo.getUI().update('hp', Session.Entity.life.hp, Session.Entity.life.hp_max);
-
 				if (Session.hasParty) {
-					PartyUI.updateMemberLife(Session.AID, Session.Entity.life.canvas, Session.Entity.life.hp, Session.Entity.life.hp_max);
+					
 				}
 			}
 			//Danger
@@ -338,329 +523,329 @@ function onParameterChange( pkt )
 					const hunger = DB.getPetHungryState(Session.pet.oldHungry);
 					const talk = DB.getPetTalkNumber(Session.pet.job, PetMessageConst.PM_DANGER, hunger);
 
-					var pkt    = new PACKET.CZ.PET_ACT();
-					pkt.data = talk;
-					Network.sendPacket(pkt);
-					Session.pet.lastTalk = Date.now();
+					// var pkt    = new PACKET.CZ.PET_ACT();
+					// pkt.data = talk;
+					// Network.sendPacket(pkt);
+					// Session.pet.lastTalk = Date.now();
 				}
 			}
 			//Died
 			if(Session.Entity.life.hp <= 1){
 				//Pet Talk
-				if(Session.pet.friendly > 900 ){
-					const hunger = DB.getPetHungryState(Session.pet.oldHungry);
-					const talk = DB.getPetTalkNumber(Session.pet.job, PetMessageConst.PM_DEAD, hunger);
+				// if(Session.pet.friendly > 900 ){
+				// 	const hunger = DB.getPetHungryState(Session.pet.oldHungry);
+				// 	const talk = DB.getPetTalkNumber(Session.pet.job, PetMessageConst.PM_DEAD, hunger);
 
-					var pkt    = new PACKET.CZ.PET_ACT();
-					pkt.data = talk;
-					Network.sendPacket(pkt);
-					Session.pet.lastTalk = Date.now();
-				}
+				// 	var pkt    = new PACKET.CZ.PET_ACT();
+				// 	pkt.data = talk;
+				// 	Network.sendPacket(pkt);
+				// 	Session.pet.lastTalk = Date.now();
+				// }
 
 			}
 			break;
 
-		case StatusProperty.MAXHP:
+		case ENUM_StatusProperty.ENUM_MAXHP:
 			Session.Entity.life.hp_max = amount;
 			Session.Entity.life.update();
 
 			if (Session.Entity.life.hp > -1) {
-				BasicInfo.getUI().update('hp', Session.Entity.life.hp, Session.Entity.life.hp_max);
+				// BasicInfo.getUI().update('hp', Session.Entity.life.hp, Session.Entity.life.hp_max);
 
 				if (Session.hasParty) {
-					PartyUI.updateMemberLife(Session.AID, Session.Entity.life.canvas, Session.Entity.life.hp, Session.Entity.life.hp_max);
+					// PartyUI.updateMemberLife(Session.AID, Session.Entity.life.canvas, Session.Entity.life.hp, Session.Entity.life.hp_max);
 				}
 			}
 			break;
 
-		case StatusProperty.SP:
+		case ENUM_StatusProperty.ENUM_SP:
 			Session.Entity.life.sp = amount;
 			Session.Entity.life.update();
 
 			if (Session.Entity.life.sp_max > -1) {
-				BasicInfo.getUI().update('sp', Session.Entity.life.sp, Session.Entity.life.sp_max);
+				// BasicInfo.getUI().update('sp', Session.Entity.life.sp, Session.Entity.life.sp_max);
 			}
 			break;
 
-		case StatusProperty.MAXSP:
+		case ENUM_StatusProperty.ENUM_MAXSP:
 			Session.Entity.life.sp_max = amount;
 			Session.Entity.life.update();
 
 			if (Session.Entity.life.sp > -1) {
-				BasicInfo.getUI().update('sp', Session.Entity.life.sp, Session.Entity.life.sp_max);
+				// BasicInfo.getUI().update('sp', Session.Entity.life.sp, Session.Entity.life.sp_max);
 			}
 			break;
 
-		case StatusProperty.POINT:
-			WinStats.getUI().update('statuspoint', amount);
+		case ENUM_StatusProperty.ENUM_POINT:
+			// WinStats.getUI().update('statuspoint', amount);
 			break;
 
-		case StatusProperty.CLEVEL:
+		case ENUM_StatusProperty.ENUM_CLEVEL:
 			Session.Entity.clevel = amount;
 			// load aura on levelup
-			Session.Entity.aura.load( EffectManager );
-			BasicInfo.getUI().update('blvl', amount);
-			Equipment.getUI().onLevelUp();
-			ChangeCart.onLevelUp(amount);
+			// Session.Entity.aura.load( EffectManager );
+			// BasicInfo.getUI().update('blvl', amount);
+			// Equipment.getUI().onLevelUp();
+			// ChangeCart.onLevelUp(amount);
 
 			//Pet Talk
-			if(Session.pet.friendly > 900){
-				const hunger = DB.getPetHungryState(Session.pet.oldHungry);
-				const talk = DB.getPetTalkNumber(Session.pet.job, PetMessageConst.PM_LEVELUP, hunger);
+			// if(Session.pet.friendly > 900){
+			// 	const hunger = DB.getPetHungryState(Session.pet.oldHungry);
+			// 	const talk = DB.getPetTalkNumber(Session.pet.job, PetMessageConst.PM_LEVELUP, hunger);
 
-				var pkt    = new PACKET.CZ.PET_ACT();
-				pkt.data = talk;
-				Network.sendPacket(pkt);
-				Session.pet.lastTalk = Date.now();
-			}
+			// 	var pkt    = new PACKET.CZ.PET_ACT();
+			// 	pkt.data = talk;
+			// 	Network.sendPacket(pkt);
+			// 	Session.pet.lastTalk = Date.now();
+			// }
 			break;
 
-		case StatusProperty.SKPOINT:
-			SkillList.getUI().setPoints(amount);
+		case ENUM_StatusProperty.ENUM_SKPOINT:
+			// SkillList.getUI().setPoints(amount);
 			break;
 
-		case StatusProperty.STR:
-			WinStats.getUI().update('str',  pkt.defaultStatus);
-			WinStats.getUI().update('str2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_STR:
+			// WinStats.getUI().update('str',  pkt.defaultStatus);
+			// WinStats.getUI().update('str2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.AGI:
-			WinStats.getUI().update('agi',  pkt.defaultStatus);
-			WinStats.getUI().update('agi2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_AGI:
+			// WinStats.getUI().update('agi',  pkt.defaultStatus);
+			// WinStats.getUI().update('agi2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.VIT:
-			WinStats.getUI().update('vit',  pkt.defaultStatus);
-			WinStats.getUI().update('vit2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_VIT:
+			// WinStats.getUI().update('vit',  pkt.defaultStatus);
+			// WinStats.getUI().update('vit2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.INT:
-			WinStats.getUI().update('int',  pkt.defaultStatus);
-			WinStats.getUI().update('int2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_INT:
+			// WinStats.getUI().update('int',  pkt.defaultStatus);
+			// WinStats.getUI().update('int2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.DEX:
-			WinStats.getUI().update('dex',  pkt.defaultStatus);
-			WinStats.getUI().update('dex2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_DEX:
+			// WinStats.getUI().update('dex',  pkt.defaultStatus);
+			// WinStats.getUI().update('dex2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.LUK:
-			WinStats.getUI().update('luk',  pkt.defaultStatus);
-			WinStats.getUI().update('luk2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_LUK:
+			// WinStats.getUI().update('luk',  pkt.defaultStatus);
+			// WinStats.getUI().update('luk2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.MONEY:
-			BasicInfo.getUI().update('zeny', amount);
+		case ENUM_StatusProperty.ENUM_MONEY:
+			// BasicInfo.getUI().update('zeny', amount);
 			break;
 
-		case StatusProperty.MAXEXP:
-			BasicInfo.getUI().base_exp_next = amount;
-			if (BasicInfo.getUI().base_exp > -1) {
-				BasicInfo.getUI().update('bexp', BasicInfo.getUI().base_exp, BasicInfo.getUI().base_exp_next );
-			}
+		case ENUM_StatusProperty.ENUM_MAXEXP:
+			// BasicInfo.getUI().base_exp_next = amount;
+			// if (BasicInfo.getUI().base_exp > -1) {
+			// 	BasicInfo.getUI().update('bexp', BasicInfo.getUI().base_exp, BasicInfo.getUI().base_exp_next );
+			// }
 			break;
 
-		case StatusProperty.MAXJOBEXP:
-			BasicInfo.getUI().job_exp_next = amount;
-			if (BasicInfo.getUI().job_exp > -1) {
-				BasicInfo.getUI().update('jexp', BasicInfo.getUI().job_exp, BasicInfo.getUI().job_exp_next );
-			}
+		case ENUM_StatusProperty.ENUM_MAXJOBEXP:
+			// BasicInfo.getUI().job_exp_next = amount;
+			// if (BasicInfo.getUI().job_exp > -1) {
+			// 	BasicInfo.getUI().update('jexp', BasicInfo.getUI().job_exp, BasicInfo.getUI().job_exp_next );
+			// }
 			break;
 
-		case StatusProperty.WEIGHT:
-			Session.Character.weight = amount;	// Save weight in Session instead of UI
-			if (BasicInfo.getUI().weight_max > -1) {
-				BasicInfo.getUI().update('weight', Session.Character.weight, BasicInfo.getUI().weight_max );
-			}
+		case ENUM_StatusProperty.ENUM_WEIGHT:
+			// Session.Character.weight = amount;	// Save weight in Session instead of UI
+			// if (BasicInfo.getUI().weight_max > -1) {
+			// 	BasicInfo.getUI().update('weight', Session.Character.weight, BasicInfo.getUI().weight_max );
+			// }
 			break;
 
-		case StatusProperty.MAXWEIGHT:
+		case ENUM_StatusProperty.ENUM_MAXWEIGHT:
 			Session.Character.max_weight = amount;	// Save max weight in Session instead of UI only
-			BasicInfo.getUI().weight_max = amount;
-			if (BasicInfo.getUI().weight > -1) {
-				BasicInfo.getUI().update('weight', Session.Character.weight, BasicInfo.getUI().weight_max );
-			}
+			// BasicInfo.getUI().weight_max = amount;
+			// if (BasicInfo.getUI().weight > -1) {
+			// 	BasicInfo.getUI().update('weight', Session.Character.weight, BasicInfo.getUI().weight_max );
+			// }
 			break;
 
-		case StatusProperty.STANDARD_STR:
-			WinStats.getUI().update('str3', amount);
+		case ENUM_StatusProperty.ENUM_STANDARD_STR:
+
 			break;
 
-		case StatusProperty.STANDARD_AGI:
-			WinStats.getUI().update('agi3', amount);
+		case ENUM_StatusProperty.ENUM_STANDARD_AGI:
+			// WinStats.getUI().update('agi3', amount);
 			break;
 
-		case StatusProperty.STANDARD_VIT:
-			WinStats.getUI().update('vit3', amount);
+		case ENUM_StatusProperty.ENUM_STANDARD_VIT:
+			// WinStats.getUI().update('vit3', amount);
 			break;
 
-		case StatusProperty.STANDARD_INT:
-			WinStats.getUI().update('int3', amount);
+		case ENUM_StatusProperty.ENUM_STANDARD_INT:
+			// WinStats.getUI().update('int3', amount);
 			break;
 
-		case StatusProperty.STANDARD_DEX:
-			WinStats.getUI().update('dex3', amount);
+		case ENUM_StatusProperty.ENUM_STANDARD_DEX:
+			// WinStats.getUI().update('dex3', amount);
 			break;
 
-		case StatusProperty.STANDARD_LUK:
-			WinStats.getUI().update('luk3', amount);
+		case ENUM_StatusProperty.ENUM_STANDARD_LUK:
+			// WinStats.getUI().update('luk3', amount);
 			break;
 
-		case StatusProperty.ATTPOWER:
-			WinStats.getUI().update('atak', amount);
+		case ENUM_StatusProperty.ENUM_ATTPOWER:
+			// WinStats.getUI().update('atak', amount);
 			break;
 
-		case StatusProperty.REFININGPOWER:
-			WinStats.getUI().update('atak2', amount);
+		case ENUM_StatusProperty.ENUM_REFININGPOWER:
+			// WinStats.getUI().update('atak2', amount);
 			break;
 
-		case StatusProperty.MAX_MATTPOWER:
-			WinStats.getUI().update('matak', amount);
+		case ENUM_StatusProperty.ENUM_MAX_MATTPOWER:
+			// WinStats.getUI().update('matak', amount);
 			break;
 
-		case StatusProperty.MIN_MATTPOWER:
-			WinStats.getUI().update('matak2', amount);
+		case ENUM_StatusProperty.ENUM_MIN_MATTPOWER:
+			// WinStats.getUI().update('matak2', amount);
 			break;
 
-		case StatusProperty.ITEMDEFPOWER:
-			WinStats.getUI().update('def', amount);
+		case ENUM_StatusProperty.ENUM_ITEMDEFPOWER:
+			// WinStats.getUI().update('def', amount);
 			break;
 
-		case StatusProperty.PLUSDEFPOWER:
-			WinStats.getUI().update('def2', amount);
+		case ENUM_StatusProperty.ENUM_PLUSDEFPOWER:
+			// WinStats.getUI().update('def2', amount);
 			break;
 
-		case StatusProperty.MDEFPOWER:
-			WinStats.getUI().update('mdef', amount);
+		case ENUM_StatusProperty.ENUM_MDEFPOWER:
+			// WinStats.getUI().update('mdef', amount);
 			break;
 
-		case StatusProperty.PLUSMDEFPOWER:
-			WinStats.getUI().update('mdef2', amount);
+		case ENUM_StatusProperty.ENUM_PLUSMDEFPOWER:
+			// WinStats.getUI().update('mdef2', amount);
 			break;
 
-		case StatusProperty.HITSUCCESSVALUE:
-			WinStats.getUI().update('hit', amount);
+		case ENUM_StatusProperty.ENUM_HITSUCCESSVALUE:
+			// WinStats.getUI().update('hit', amount);
 			break;
 
-		case StatusProperty.AVOIDSUCCESSVALUE:
-			WinStats.getUI().update('flee', amount);
+		case ENUM_StatusProperty.ENUM_AVOIDSUCCESSVALUE:
+			// WinStats.getUI().update('flee', amount);
 			break;
 
-		case StatusProperty.PLUSAVOIDSUCCESSVALUE:
-			WinStats.getUI().update('flee2', amount);
+		case ENUM_StatusProperty.ENUM_PLUSAVOIDSUCCESSVALUE:
+			// WinStats.getUI().update('flee2', amount);
 			break;
 
-		case StatusProperty.CRITICALSUCCESSVALUE:
-			WinStats.getUI().update('critical', amount);
+		case ENUM_StatusProperty.ENUM_CRITICALSUCCESSVALUE:
+			// WinStats.getUI().update('critical', amount);
 			break;
 
-		case StatusProperty.ASPD:
-			WinStats.getUI().update('aspd', amount);
+		case ENUM_StatusProperty.ENUM_ASPD:
+			// WinStats.getUI().update('aspd', amount);
 			break;
 
-		case StatusProperty.JOBLEVEL:
-			BasicInfo.getUI().update('jlvl', amount);
-			SkillList.getUI().onLevelUp();
+		case ENUM_StatusProperty.ENUM_JOBLEVEL:
+			// BasicInfo.getUI().update('jlvl', amount);
+			// SkillList.getUI().onLevelUp();
 			break;
 
-		case StatusProperty.VAR_SP_POW:
-			WinStats.getUI().update('pow', 	pkt.defaultStatus);
-			WinStats.getUI().update('pow2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_VAR_SP_POW:
+			// WinStats.getUI().update('pow', 	pkt.defaultStatus);
+			// WinStats.getUI().update('pow2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.VAR_SP_STA:
-			WinStats.getUI().update('sta', 	pkt.defaultStatus);
-			WinStats.getUI().update('sta2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_VAR_SP_STA:
+			// WinStats.getUI().update('sta', 	pkt.defaultStatus);
+			// WinStats.getUI().update('sta2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.VAR_SP_WIS:
+		case ENUM_StatusProperty.ENUM_VAR_SP_WIS:
 			WinStats.getUI().update('wis', 	pkt.defaultStatus);
 			WinStats.getUI().update('wis2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.VAR_SP_SPL:
-			WinStats.getUI().update('spl', 	pkt.defaultStatus);
-			WinStats.getUI().update('spl2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_VAR_SP_SPL:
+			// WinStats.getUI().update('spl', 	pkt.defaultStatus);
+			// WinStats.getUI().update('spl2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.VAR_SP_CON:
-			WinStats.getUI().update('con', 	pkt.defaultStatus);
-			WinStats.getUI().update('con2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_VAR_SP_CON:
+			// WinStats.getUI().update('con', 	pkt.defaultStatus);
+			// WinStats.getUI().update('con2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.VAR_SP_CRT:
-			WinStats.getUI().update('crt', 	pkt.defaultStatus);
-			WinStats.getUI().update('crt2', pkt.plusStatus);
+		case ENUM_StatusProperty.ENUM_VAR_SP_CRT:
+			// WinStats.getUI().update('crt', 	pkt.defaultStatus);
+			// WinStats.getUI().update('crt2', pkt.plusStatus);
 			break;
 
-		case StatusProperty.VAR_SP_PATK:
-			WinStats.getUI().update('patk', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_PATK:
+			// WinStats.getUI().update('patk', amount);
 			break;
 
-		case StatusProperty.VAR_SP_SMATK:
-			WinStats.getUI().update('smatk', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_SMATK:
+			// WinStats.getUI().update('smatk', amount);
 			break;
 
-		case StatusProperty.VAR_SP_RES:
-			WinStats.getUI().update('res', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_RES:
+			// WinStats.getUI().update('res', amount);
 			break;
 
-		case StatusProperty.VAR_SP_MRES:
-			WinStats.getUI().update('mres', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_MRES:
+			// WinStats.getUI().update('mres', amount);
 			break;
 
-		case StatusProperty.VAR_SP_HPLUS:
-			WinStats.getUI().update('hplus', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_HPLUS:
+			// WinStats.getUI().update('hplus', amount);
 			break;
 
-		case StatusProperty.VAR_SP_CRATE:
-			WinStats.getUI().update('crate', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_CRATE:
+			// WinStats.getUI().update('crate', amount);
 			break;
 
-		case StatusProperty.VAR_SP_TRAITPOINT:
-			WinStats.getUI().update('trait_point', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_TRAITPOINT:
+			// WinStats.getUI().update('trait_point', amount);
 			break;
 
-		case StatusProperty.VAR_SP_AP:
+		case ENUM_StatusProperty.ENUM_VAR_SP_AP:
 			Session.Entity.life.ap = amount;
 			Session.Entity.life.update();
 
 			if (Session.Entity.life.ap_max > -1) {
-				BasicInfo.getUI().update('ap', Session.Entity.life.ap, Session.Entity.life.ap_max);
+				// BasicInfo.getUI().update('ap', Session.Entity.life.ap, Session.Entity.life.ap_max);
 			}
 			break;
 
-		case StatusProperty.VAR_SP_MAXAP:
+		case ENUM_StatusProperty.ENUM_VAR_SP_MAXAP:
 			Session.Entity.life.ap_max = amount;
 			Session.Entity.life.update();
 
 			if (Session.Entity.life.ap > -1) {
-				BasicInfo.getUI().update('ap', Session.Entity.life.ap, Session.Entity.life.ap_max);
+				// BasicInfo.getUI().update('ap', Session.Entity.life.ap, Session.Entity.life.ap_max);
 			}
 			break;
 
-		case StatusProperty.VAR_SP_UPOW:
-			WinStats.getUI().update('pow3', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_UPOW:
+			// WinStats.getUI().update('pow3', amount);
 			break;
 
-		case StatusProperty.VAR_SP_USTA:
-			WinStats.getUI().update('sta3', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_USTA:
+			// WinStats.getUI().update('sta3', amount);
 			break;
 
-		case StatusProperty.VAR_SP_UWIS:
-			WinStats.getUI().update('wis3', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_UWIS:
+			// WinStats.getUI().update('wis3', amount);
 			break;
 
-		case StatusProperty.VAR_SP_USPL:
-			WinStats.getUI().update('spl3', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_USPL:
+			// WinStats.getUI().update('spl3', amount);
 			break;
 
-		case StatusProperty.VAR_SP_UCON:
-			WinStats.getUI().update('con3', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_UCON:
+			// WinStats.getUI().update('con3', amount);
 			break;
 
-		case StatusProperty.VAR_SP_UCRT:
-			WinStats.getUI().update('crt3', amount);
+		case ENUM_StatusProperty.ENUM_VAR_SP_UCRT:
+			// WinStats.getUI().update('crt3', amount);
 			break;
 
 		default:
@@ -668,4 +853,21 @@ function onParameterChange( pkt )
 	}
 }
 
-export default MapEngine;
+function onWalkEnd()
+{
+	// No action to do ?
+	if (Session.moveAction) {
+		// Not sure why, but there is a synchronization error with the
+		// server when moving to attack (wrong position).
+		// So wait 50ms to be sure we are at the correct position before
+		// performing an action
+		Events.setTimeout(function(){
+			if (Session.moveAction) {
+				Network.sendPacket(Session.moveAction);
+				Session.moveAction = null;
+			}
+		}, 50);
+	}
+}
+
+export default Map;
