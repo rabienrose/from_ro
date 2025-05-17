@@ -288,7 +288,7 @@ EffectManager.spam = function spam(EF_Init_Par) {
 		return;
 	}
 	EF_Init_Par = PrepareInit(EF_Init_Par);
-
+	console.log(EF_Init_Par.effectId)
 	// Not found
 	if (!(EF_Init_Par.effectId in DB.EffectTable)) {
 		console.log("Effect not found: ", EF_Init_Par.effectId);

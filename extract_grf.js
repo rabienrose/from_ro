@@ -10,8 +10,7 @@ async function init() {
   const fd = fs.openSync(filePath, "r");
   var grf = new GrfNode(fd);
   await grf.load();
-  grf.files.forEach(async (v, grf_filename , m) => {
-    // console.log("grf_filename", grf_filename)
+  for (const [grf_filename, value] of grf.files) {
     var filename = grf_filename.replace(/\\/g, '\/');
     // console.log("filename", filename)
     const {data, error} = await grf.getFile(grf_filename);
@@ -24,7 +23,7 @@ async function init() {
       fs.mkdirSync(extractDir, { recursive: true });
     }
     fs.writeFileSync(localPath, data_content);
-  });
+  }
 }
 
 await init();

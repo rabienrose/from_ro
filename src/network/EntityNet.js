@@ -11,6 +11,7 @@ import EffectManager from '../render/EffectManager.js';
 import EffectConst from '../configs/EffectConst.js';
 import Damage from '../render/effects/Damage.js';
 import Renderer from '../render/Renderer.js';
+import Session from '../utils/SessionStorage.js';
 
 
 const C_MULTIHIT_DELAY = 200; // PLUSATTACKED_MOTIONTIME

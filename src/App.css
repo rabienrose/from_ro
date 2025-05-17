@@ -5,6 +5,14 @@
   left: 0;
 }
 
+.restart-container{
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
 .app-container {
   position: absolute;
   width: 100%;
