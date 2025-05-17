@@ -2,7 +2,7 @@ import { GrfNode } from "@chicowall/grf-loader";
 import fs from "fs";
 import path from "path";
 
-var extract_root = path.join(process.cwd(), "data1");
+var extract_root = process.cwd()
 
 async function init() {
   const filePath = path.join(process.cwd(), "data.grf");
