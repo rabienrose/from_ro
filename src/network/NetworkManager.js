@@ -21,7 +21,7 @@ var Network = {};
 
 Network.connect = function( host, port, callback)
 {
-	var proxy = "ws://"+Globals.root_ip+":443/";
+	var proxy = "ws://"+Globals.root_ip+":8003/";
 	_socket = new WebSocket(host, port, proxy, 
 		(success)=>{
 			var msg   = 'Fail';

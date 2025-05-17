@@ -18,7 +18,7 @@ app.post('/debug', express.json(), (req, res) => {
 app.use(express.static('data'));
 // 捕获所有请求，检查文件是否存在
 app.use((req, res, next) => {
-    const filePath = path.join(process.cwd(), 'public', req.path);
+    const filePath = path.join(process.cwd(), 'data', req.path);
     
     fs.access(filePath, fs.constants.F_OK, (err) => {
         if (err) {
