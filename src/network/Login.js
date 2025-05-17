@@ -78,7 +78,7 @@ function onConnectionRequest( username, password, _login_cb )
   Network.hookPacket( PACKET.AC.REFUSE_LOGIN,    onConnectionRefused );
   Network.hookPacket( PACKET.SC.NOTIFY_BAN,      onServerClosed );
   Sound.play('click_sound.wav');
-  const address = Globals.root_ip
+  const address = "127.0.0.1"
   const port = 6900
   Network.connect( address, port, function( success ) {
     if ( !success ) {
