@@ -7,7 +7,7 @@ import MapRenderer from './render/MapRenderer.js';
 let test_type=2;
 FileManager.remoteClient = 'http://localhost:8001';
 if(test_type==0){
-  FileManager.load('/resources/sprite/cursors.spr')
+  FileManager.load('/sprite/cursors.spr')
     .then(spr => {
         console.log(spr);
       var canvas = spr.getCanvasFromFrame(0);

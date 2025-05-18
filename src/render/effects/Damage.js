@@ -59,9 +59,9 @@ Damage.init = function init( gl )
 	}
 	_numbers = new Array(10);
 	var files = [
-		'/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/\xbc\xfd\xc0\xda.spr',
-		'/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/msg.spr',
-		'/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/bluemsg.spr'
+		'/sprite/c0ccc6d1c6ae/\xbc\xfd\xc0\xda.spr',
+		'/sprite/c0ccc6d1c6ae/msg.spr',
+		'/sprite/c0ccc6d1c6ae/bluemsg.spr'
 	];
 
 	// Load damage number and message sprites
@@ -77,7 +77,7 @@ Damage.init = function init( gl )
 		sprBlue   = new Sprite(results[2]);
 
 		// Load it properly later using webgl
-		MemoryManager.remove(gl, 'data/sprite/\xc0\xcc\xc6\xd1\xc6\xae/msg.spr');
+		MemoryManager.remove(gl, 'data/sprite/c0ccc6d1c6ae/msg.spr');
 
 		// Create SpriteSheet
 		for (var i = 0; i < _numbers.length; ++i) {

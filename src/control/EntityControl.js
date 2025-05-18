@@ -111,8 +111,8 @@ function onFocus()
 		case Entity.TYPE_NPC_BIONIC:
 			this.attachments.add({
 				uid:    'lockon',
-				spr:    '/resources/sprite/cursors.spr',
-				act:    '/resources/sprite/cursors.act',
+				spr:    '/sprite/cursors.spr',
+				act:    '/sprite/cursors.act',
 				frame:   3,
 				repeat:  true,
 				depth:   10.0,

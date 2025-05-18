@@ -34,13 +34,9 @@ FileManager.send_debug_int= function(name, val){
 }
 FileManager.get = function GetHTTP( filename )
 {
-	filename = filename.replace(/^\s+|\s+$/g, '');
-	filename = filename.replace( /\\/g, '/');
-	var url  = filename.replace(/[^//]+/g, function(a){return encodeURIComponent(a);});
-	url = this.remoteClient + url;
-	if (filename.match(/\.(mp3|wav)$/)) {
-		return;
-	}
+	filename = filename.replace(/\\/g, '\/');
+	filename = Globals.convert_2_readable(filename);
+	var url = this.remoteClient + filename;
 	return fetch(url)
 		.then(response => {
 			if (!response.ok) {

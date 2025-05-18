@@ -63,7 +63,7 @@ SoundManager.play = function play( filename, vol ) {
 	sound             = document.createElement('audio');
 	mediaPlayerCount++;
 	sound.filename    = filename;
-	sound.src         = FileManager.remoteClient+'/resources/wav/' + filename;
+	sound.src         = FileManager.remoteClient+'/wav/' + filename;
 	sound.volume      = Math.min(volume,1.0);
 	sound._volume     = volume;
 	

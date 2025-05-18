@@ -36,8 +36,8 @@ AttachmentManager.prototype.add = function add( attachment )
 					attachment.spr = attachment.completeFile + '.spr';
 					attachment.act = attachment.completeFile + '.act';
 			} else if (attachment.file) {
-		attachment.spr = '/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/' + attachment.file + '.spr';
-		attachment.act = '/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/' + attachment.file + '.act';
+		attachment.spr = '/sprite/c0ccc6d1c6ae/' + attachment.file + '.spr';
+		attachment.act = '/sprite/c0ccc6d1c6ae/' + attachment.file + '.act';
 	}
 
 	// Start rendering once sprite is loaded

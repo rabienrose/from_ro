@@ -47,7 +47,7 @@ BGM.play = function play( filename )
 		this.filename = filename;
 	}
 
-	BGM.load( "http://" + Global.root_ip + ':8002/resources/bgm/' + filename);
+	BGM.load( "http://" + Global.root_ip + ':8002/bgm/' + filename);
 };
 
 BGM.delay_play = function delay_play()

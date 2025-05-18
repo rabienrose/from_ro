@@ -278,7 +278,7 @@ ThreeDEffect.prototype.init = function init(gl) {
 		var textureCount = this.textureNameList.length;
 
 		for (let i=0; i<textureCount; i++){
-			FileManager.load('/resources/texture/' + this.textureNameList[i])
+			FileManager.load('/texture/' + this.textureNameList[i])
 			.then((buffer) => {
 				WebGL.texture(gl, buffer, function (texture) {
 					self.textureList[i] = texture;
@@ -291,7 +291,7 @@ ThreeDEffect.prototype.init = function init(gl) {
 			});
 		}
 	} else if (this.textureName) {
-		FileManager.load('/resources/texture/' + this.textureName)
+		FileManager.load('/texture/' + this.textureName)
 		.then((buffer) => {
 			WebGL.texture(gl, buffer, function (texture) {
 				self.texture = texture;
@@ -326,11 +326,11 @@ ThreeDEffect.prototype.render = function render(gl, tick) {
 
 	if (!this.spriteRessource) {
 		if (this.shadowTexture) {
-			this.spriteRessource = FileManager.load('/resources/sprite/shadow.spr');
-			this.actRessource = FileManager.load('/resources/sprite/shadow.act');
+			this.spriteRessource = FileManager.load('/sprite/shadow.spr');
+			this.actRessource = FileManager.load('/sprite/shadow.act');
 		} else if (this.spriteName) {
-			this.spriteRessource = FileManager.load('/resources/sprite/' + this.spriteName + '.spr');
-			this.actRessource = FileManager.load('/resources/sprite/' + this.spriteName + '.act');
+			this.spriteRessource = FileManager.load('/sprite/' + this.spriteName + '.spr');
+			this.actRessource = FileManager.load('/sprite/' + this.spriteName + '.act');
 		}
 	}
 

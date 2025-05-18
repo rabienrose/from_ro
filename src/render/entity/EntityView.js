@@ -22,7 +22,7 @@ function View()
 	this.accessory2 = new ViewFiles();
 	this.accessory3 = new ViewFiles();
 	this.robe       = new ViewFiles();
-	this.shadow     = new ViewFiles('/resources/sprite/shadow.spr', '/resources/sprite/shadow.act');
+	this.shadow     = new ViewFiles('/sprite/shadow.spr', '/sprite/shadow.act');
 }
 
 function UpdateSex( sex )

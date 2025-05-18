@@ -5,9 +5,9 @@ var MapLoader={};
 MapLoader.fileCount = 0;
 MapLoader.progress = 0;
 MapLoader.offset = 0;
-MapLoader.map_root = '/resources/maps/';
-MapLoader.texture_root = '/resources/texture/';
-MapLoader.model_root = '/resources/model/';
+MapLoader.map_root = '/maps/';
+MapLoader.texture_root = '/texture/';
+MapLoader.model_root = '/model/';
 
 MapLoader.load = function Load( mapname ){
 	if (DB.MapAlias[mapname]) {

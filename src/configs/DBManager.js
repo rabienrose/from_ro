@@ -629,17 +629,17 @@ DB.WeaponType={
 
 var WeaponNameTable = {};
 WeaponNameTable[DB.WeaponType.NONE]                  = "";
-WeaponNameTable[DB.WeaponType.SHORTSWORD]            = "_\xb4\xdc\xb0\xcb";
-WeaponNameTable[DB.WeaponType.SWORD]                 = "_\xb0\xcb";
-WeaponNameTable[DB.WeaponType.TWOHANDSWORD]          = "_\xb0\xcb";
-WeaponNameTable[DB.WeaponType.SPEAR]                 = "_\xc3\xa2";
-WeaponNameTable[DB.WeaponType.TWOHANDSPEAR]          = "_\xc3\xa2";
-WeaponNameTable[DB.WeaponType.AXE]                   = "_\xb5\xb5\xb3\xa2";
-WeaponNameTable[DB.WeaponType.TWOHANDAXE]            = "_\xb5\xb5\xb3\xa2";
-WeaponNameTable[DB.WeaponType.MACE]                  = "_\xc5\xac\xb7\xb4";
-WeaponNameTable[DB.WeaponType.TWOHANDMACE]           = "_\xc5\xac\xb7\xb4";
-WeaponNameTable[DB.WeaponType.ROD]                   = "_\xb7\xd4\xb5\xe5";
-WeaponNameTable[DB.WeaponType.BOW]                   = "_\xc8\xb0";
+WeaponNameTable[DB.WeaponType.SHORTSWORD]            = "_b4dcb0cb";
+WeaponNameTable[DB.WeaponType.SWORD]                 = "_b0cb";
+WeaponNameTable[DB.WeaponType.TWOHANDSWORD]          = "_b0cb";
+WeaponNameTable[DB.WeaponType.SPEAR]                 = "_c3a2";
+WeaponNameTable[DB.WeaponType.TWOHANDSPEAR]          = "_c3a2";
+WeaponNameTable[DB.WeaponType.AXE]                   = "_b5b5b3a2";
+WeaponNameTable[DB.WeaponType.TWOHANDAXE]            = "_b5b5b3a2";
+WeaponNameTable[DB.WeaponType.MACE]                  = "_c5acb7b4";
+WeaponNameTable[DB.WeaponType.TWOHANDMACE]           = "_c5acb7b4";
+WeaponNameTable[DB.WeaponType.ROD]                   = "_b7d4b5e5";
+WeaponNameTable[DB.WeaponType.BOW]                   = "_c8b0";
 
 var JobHitSoundTable = {};
 JobHitSoundTable[JobId.NOVICE]           = ["player_clothes.wav"];
@@ -769,16 +769,16 @@ WeaponAction[JobId.THIEF] = new function(){
 	this[ DB.WeaponType.BOW ]          = 2;
 };
 
-var SexTable = ['\xbf\xa9', '\xb3\xb2'];
+var SexTable = ['bfa9', 'b3b2'];
 
 var JobNameTable = {};
-JobNameTable[JobId.NOVICE]           = "\xC3\xCA\xBA\xB8\xC0\xDA";
-JobNameTable[JobId.SWORDMAN]         = "\xB0\xCB\xBB\xE7";
-JobNameTable[JobId.MAGICIAN]         = "\xB8\xB6\xB9\xFD\xBB\xE7";
-JobNameTable[JobId.ARCHER]           = "\xB1\xC3\xBC\xF6";
-JobNameTable[JobId.ACOLYTE]          = "\xBC\xBA\xC1\xF7\xC0\xDA";
-JobNameTable[JobId.MERCHANT]         = "\xBB\xF3\xC0\xCE";
-JobNameTable[JobId.THIEF]            = "\xB5\xB5\xB5\xCF";
+JobNameTable[JobId.NOVICE]           = "c3cabab8c0da";
+JobNameTable[JobId.SWORDMAN]         = "b0cbbbe7";
+JobNameTable[JobId.MAGICIAN]         = "b8b6b9fdbbe7";
+JobNameTable[JobId.ARCHER]           = "b1c3bcf6";
+JobNameTable[JobId.ACOLYTE]          = "bcBac1f7c0da";
+JobNameTable[JobId.MERCHANT]         = "bbf3c0ce";
+JobNameTable[JobId.THIEF]            = "b5b5b5cf";
 
 var MonsterTable = {};
 MonsterTable[46] = "1_ETC_01";
@@ -829,17 +829,17 @@ var HairIndexTable =[
 
 var WeaponTrailTable = {};
 WeaponTrailTable[DB.WeaponType.NONE] = "";
-WeaponTrailTable[DB.WeaponType.SHORTSWORD] = "_\xb4\xdc\xb0\xcb_\xb0\xcb\xb1\xa4"; //_´Ü°Ë_°Ë±¤ - dagger_trail
-WeaponTrailTable[DB.WeaponType.SWORD] = "_\xb0\xcb_\xb0\xcb\xb1\xa4"; //_°Ë_°Ë±¤ - sword_trail
-WeaponTrailTable[DB.WeaponType.TWOHANDSWORD] = "_\xb0\xcb_\xb0\xcb\xb1\xa4";
-WeaponTrailTable[DB.WeaponType.SPEAR] = "_\xc3\xa2_\xb0\xcb\xb1\xa4";
-WeaponTrailTable[DB.WeaponType.TWOHANDSPEAR] = "_\xc3\xa2_\xb0\xcb\xb1\xa4";
-WeaponTrailTable[DB.WeaponType.AXE] = "_\xb5\xb5\xb3\xa2_\xb0\xcb\xb1\xa4";
-WeaponTrailTable[DB.WeaponType.TWOHANDAXE] = "_\xb5\xb5\xb3\xa2_\xb0\xcb\xb1\xa4";
-WeaponTrailTable[DB.WeaponType.MACE] = "_\xc5\xac\xb7\xb4_\xb0\xcb\xb1\xa4";
-WeaponTrailTable[DB.WeaponType.TWOHANDMACE] = "_\xc5\xac\xb7\xb4_\xb0\xcb\xb1\xa4";
-WeaponTrailTable[DB.WeaponType.ROD] = "_\xb7\xd4\xb5\xe5_\xb0\xcb\xb1\xa4";
-WeaponTrailTable[DB.WeaponType.BOW] = "_\xc8\xb0_\xb0\xcb\xb1\xa4";
+WeaponTrailTable[DB.WeaponType.SHORTSWORD] = "_b4dcb0cb_b0cbb1a4"; //_´Ü°Ë_°Ë±¤ - dagger_trail
+WeaponTrailTable[DB.WeaponType.SWORD] = "_b0cb_b0cbb1a4"; //_°Ë_°Ë±¤ - sword_trail
+WeaponTrailTable[DB.WeaponType.TWOHANDSWORD] = "_b0cb_b0cbb1a4";
+WeaponTrailTable[DB.WeaponType.SPEAR] = "_c3a2_b0cbb1a4";
+WeaponTrailTable[DB.WeaponType.TWOHANDSPEAR] = "_c3a2_b0cbb1a4";
+WeaponTrailTable[DB.WeaponType.AXE] = "_b5b5b3a2_b0cbb1a4";
+WeaponTrailTable[DB.WeaponType.TWOHANDAXE] = "_b5b5b3a2_b0cbb1a4";
+WeaponTrailTable[DB.WeaponType.MACE] = "_c5acb7b4_b0cbb1a4";
+WeaponTrailTable[DB.WeaponType.TWOHANDMACE] = "_c5acb7b4_b0cbb1a4";
+WeaponTrailTable[DB.WeaponType.ROD] = "_b7d4b5e5_b0cbb1a4";
+WeaponTrailTable[DB.WeaponType.BOW] = "_c8b0_b0cbb1a4";
 
 var RobeTable = {};
 RobeTable[1] = "Ãµ»ç³¯°³";
@@ -853,32 +853,32 @@ RobeTable[8] = "·çµå¶óÀÇ³¯°³";
 
 
 var ShieldTable = {};
-ShieldTable[1] = "\xb0\xa1\xb5\xe5";
-ShieldTable[2] = "\xb9\xf6\xc5\xac\xb7\xaf";
-ShieldTable[3] = "\xbd\xaf\xb5\xe5";
-ShieldTable[4] = "\xb9\xcc\xb7\xaf\xbd\xaf\xb5\xe5";
+ShieldTable[1] = "b0a1b5e5";
+ShieldTable[2] = "b9f6c5acb7af";
+ShieldTable[3] = "bdafb5e5";
+ShieldTable[4] = "b9ccb7afbdafb5e5";
 
 var HatTable={}
-HatTable[1] = "_\xb0\xed\xb1\xdb";
-HatTable[2] = "_\xb0\xed\xbe\xe7\xc0\xcc\xb8\xd3\xb8\xae\xb6\xec";
-HatTable[3] = "_\xb1\xdb\xb7\xa1\xbd\xba";
-HatTable[4] = "_\xb2\xc9";
-HatTable[5] = "_\xb2\xc9\xb8\xd3\xb8\xae\xb6\xec";
-HatTable[6] = "_\xb5\xce\xb0\xc7";
-HatTable[7] = "_\xb5\xd5\xb1\xd9\xb8\xf0\xc0\xda";
-HatTable[8] = "_\xb8\xb6\xbd\xba\xc5\xa9";
-HatTable[9] = "_\xb8\xd3\xb8\xae\xb6\xec";
+HatTable[1] = "_b0edb1db";
+HatTable[2] = "_b0edbee7c0ccb8d3b8aeb6ec";
+HatTable[3] = "_b1dbb7a1bdba";
+HatTable[4] = "_b2c9";
+HatTable[5] = "_b2c9b8d3b8aeb6ec";
+HatTable[6] = "_b5ceb0c7";
+HatTable[7] = "_b5d5b1d9b8f0c0da";
+HatTable[8] = "_b8b6bdbac5a9";
+HatTable[9] = "_b8d3b8aeb6ec";
 
 var ItemTable={}
 ItemTable[0]={
 	Name:"Toy Shield",
-	Res: "\xc5\xe4\xc0\xcc\xbd\xaf\xb5\xe5",
+	Res: "c5e4c0ccbdafb5e5",
 	ClassNum : 0,
 	slotCount: 1,
 }
 ItemTable[1201]={
 	Name:"Dagger",
-	Res: "\xb3\xaa\xc0\xcc\xc7\xc1",
+	Res: "b3aac0ccc7c1",
 	slotCount: 3,
 	ClassNum: 1
 }
@@ -1023,7 +1023,7 @@ DB.isBaby = function isBaby(job) {
 }
 
 DB.getAdminPath = function getAdminPath(sex) {
-	return '/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/\xb8\xf6\xc5\xeb/' + SexTable[sex] + '/\xbf\xee\xbf\xb5\xc0\xda_' + SexTable[sex];
+	return '/sprite/c0ceb0a3c1b7/b8f6c5eb/' + SexTable[sex] + '/bfeebfb5c0da_' + SexTable[sex];
 };
 
 
@@ -1042,33 +1042,33 @@ DB.getBodyPath = function getBodyPath(id, sex, alternative) {
 	if (isPlayer(id)) {
 		// DORAM
 		if (isDoram(id)) {
-			return '/resources/sprite/\xb5\xb5\xb6\xf7\xc1\xb7/\xb8\xf6\xc5\xeb/' + SexTable[sex] + '/' + (JobNameTable[id]) + '_' + SexTable[sex];
+			return '/sprite/b5b5b6f7c1b7/b8f6c5eb/' + SexTable[sex] + '/' + (JobNameTable[id]) + '_' + SexTable[sex];
 		}
 
 		// TODO: check for alternative 3rd and MADO alternative sprites
-		return '/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/\xb8\xf6\xc5\xeb/' + SexTable[sex] + '/' + (JobNameTable[id]) + '_' + SexTable[sex];
+		return '/sprite/c0ceb0a3c1b7/b8f6c5eb/' + SexTable[sex] + '/' + (JobNameTable[id]) + '_' + SexTable[sex];
 	}
 
 	// NPC
 	if (isNPC(id)) {
 		console.log("isNPC: ",id);
-		return '/resources/sprite/npc/' + (MonsterTable[id]).toLowerCase();
+		return '/sprite/npc/' + (MonsterTable[id]).toLowerCase();
 	}
 
 	// MERC
 	if (isMercenary(id)) {
 		// archer - female path | lancer and swordman - male path
 		// mercenary entry on monster table have sex path included
-		return '/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/\xb8\xf6\xc5\xeb/' + MonsterTable[id];
+		return '/sprite/c0ceb0a3c1b7/b8f6c5eb/' + MonsterTable[id];
 	}
 
 	// HOMUN
 	if (isHomunculus(id)) {
-		return '/resources/sprite/homun/' + (MonsterTable[id]).toLowerCase();
+		return '/sprite/homun/' + (MonsterTable[id]).toLowerCase();
 	}
 
 	// MONSTER
-	return '/resources/sprite/\xb8\xf3\xbd\xba\xc5\xcd/' + (MonsterTable[id]).toLowerCase();
+	return '/sprite/b8f3bdbac5cd/' + (MonsterTable[id]).toLowerCase();
 };
 
 DB.getBodyPalPath = function getBodyPalettePath(id, pal, sex) {
@@ -1076,7 +1076,7 @@ DB.getBodyPalPath = function getBodyPalettePath(id, pal, sex) {
 		return null;
 	}
 
-	return '/resources/palette/\xb8\xf6/' + PalNameTable[id] + '_' + SexTable[sex] + '_' + pal + '.pal';
+	return '/palette/b8f6/' + PalNameTable[id] + '_' + SexTable[sex] + '_' + pal + '.pal';
 };
 
 DB.getHeadPath = function getHeadPath(id, job, sex, orcish) {
@@ -1085,15 +1085,15 @@ DB.getHeadPath = function getHeadPath(id, job, sex, orcish) {
 	}
 	// ORC HEAD
 	if (orcish) {
-		return '/resources/sprite/\xc0\xcc\xc6\xd1\xc6\xae/orcface';
+		return '/sprite/c0ccc6d1c6ae/orcface';
 	}
 
 	// DORAM
 	if (isDoram(job)) {
-		return '/resources/sprite/\xb5\xb5\xb6\xf7\xc1\xb7/\xb8\xd3\xb8\xae\xc5\xeb/' + SexTable[sex] + '/' + (HairIndexTable[sex + 2][id]) + '_' + SexTable[sex];
+		return '/sprite/b5b5b6f7c1b7/b8d3b8aec5eb/' + SexTable[sex] + '/' + (HairIndexTable[sex + 2][id]) + '_' + SexTable[sex];
 	}
 
-	return '/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/\xb8\xd3\xb8\xae\xc5\xeb/' + SexTable[sex] + '/' + (HairIndexTable[sex][id]) + '_' + SexTable[sex];
+	return '/sprite/c0ceb0a3c1b7/b8d3b8aec5eb/' + SexTable[sex] + '/' + (HairIndexTable[sex][id]) + '_' + SexTable[sex];
 };
 
 DB.getHeadPalPath = function getHeadPalPath(id, pal, job, sex) {
@@ -1101,9 +1101,9 @@ DB.getHeadPalPath = function getHeadPalPath(id, pal, job, sex) {
 		console.log("getHeadPalPath failed: ",id, pal, sex);
 	}
 	if (job === 4218 || job === 4220) {
-		return '/resources/palette/\xb5\xb5\xb6\xf7\xc1\xb7/\xb8\xd3\xb8\xae/\xb8\xd3\xb8\xae' + (HairIndexTable[sex + 2][id]) + '_' + SexTable[sex] + '_' + pal + '.pal';
+		return '/palette/b5b5b6f7c1b7/b8d3b8ae/b8d3b8ae' + (HairIndexTable[sex + 2][id]) + '_' + SexTable[sex] + '_' + pal + '.pal';
 	}
-	var path='/resources/palette/\xb8\xd3\xb8\xae/\xb8\xd3\xb8\xae' + (HairIndexTable[sex][id]) + '_' + SexTable[sex] + '_' + pal + '.pal';
+	var path='/palette/b8d3b8ae/b8d3b8ae' + (HairIndexTable[sex][id]) + '_' + SexTable[sex] + '_' + pal + '.pal';
 
 	return path
 };
@@ -1128,7 +1128,7 @@ DB.getWeaponTrail = function getWeaponTrail(id, job, sex) {
 		console.log("getWeaponTrail failed: ",id, WeaponTrailTable[id]);
 	}
 	return (
-		'/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/'+baseClass +'/'+baseClass +'_'+SexTable[sex]+WeaponTrailTable[id]
+		'/sprite/c0ceb0a3c1b7/'+baseClass +'/'+baseClass +'_'+SexTable[sex]+WeaponTrailTable[id]
 	);
 };
 
@@ -1152,7 +1152,7 @@ DB.getShieldPath = function getShieldPath(id, job, sex) {
 	if (!ShieldTable[id]) {
 		console.log("getShieldPath failed: ",id, ShieldTable[id]);
 	}
-	return '/resources/sprite/\xb9\xe6\xc6\xd0/' + baseClass + '/' + baseClass + '_' + SexTable[sex] + '_' + (ShieldTable[id]);
+	return '/sprite/b9e6c6d0/' + baseClass + '/' + baseClass + '_' + SexTable[sex] + '_' + (ShieldTable[id]);
 };
 
 DB.getWeaponPath = function getWeaponPath(id, job, sex, leftid = false) {
@@ -1183,7 +1183,7 @@ DB.getWeaponPath = function getWeaponPath(id, job, sex, leftid = false) {
 		console.log("getWeaponPath failed: ",id, WeaponNameTable[id]);
 	}
 	
-	return '/resources/sprite/\xc0\xce\xb0\xa3\xc1\xb7/' + baseClass + '/' + baseClass + '_' + SexTable[sex] + (WeaponNameTable[id] || ('_' + id));
+	return '/sprite/c0ceb0a3c1b7/' + baseClass + '/' + baseClass + '_' + SexTable[sex] + (WeaponNameTable[id] || ('_' + id));
 };
 
 DB.getRobePath = function getRobePath(id, job, sex) {
@@ -1191,7 +1191,7 @@ DB.getRobePath = function getRobePath(id, job, sex) {
 		return null;
 	}
 
-	return '/resources/sprite/\xb7\xce\xba\xea/' + RobeTable[id] + '/' + SexTable[sex] + '/' + (JobNameTable[job] || JobNameTable[0]) + '_' + SexTable[sex];
+	return '/sprite/b7cebaea/' + RobeTable[id] + '/' + SexTable[sex] + '/' + (JobNameTable[job] || JobNameTable[0]) + '_' + SexTable[sex];
 };
 
 DB.getHatPath = function getHatPath(id, sex) {
@@ -1201,7 +1201,7 @@ DB.getHatPath = function getHatPath(id, sex) {
 	if (!HatTable[id]) {	
 		console.log("getHatPath failed: ",id, HatTable[id]);
 	}
-	return '/resources/sprite/\xbe\xc7\xbc\xbc\xbb\xe7\xb8\xae/' + SexTable[sex] + '/' + SexTable[sex] + HatTable[id];
+	return '/sprite/bec7bcbcbbe7b8ae/' + SexTable[sex] + '/' + SexTable[sex] + HatTable[id];
 };
 
 DB.getWeaponType = function getWeaponType(itemID) {

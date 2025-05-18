@@ -338,7 +338,7 @@ function TwoDEffect(effect, EF_Inst_Par, EF_Init_Par) {
 
 TwoDEffect.prototype.init = function init(gl) {
 	var self = this;
-	FileManager.load('/resources/texture/' + this.textureName)
+	FileManager.load('/texture/' + this.textureName)
 	.then((buffer) => {
 		WebGL.texture(gl, buffer, function (texture) {
 			self.texture = texture;
