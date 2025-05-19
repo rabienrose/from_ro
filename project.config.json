@@ -1,0 +1,30 @@
+{
+  "setting": {
+    "es6": true,
+    "postcss": true,
+    "minified": true,
+    "uglifyFileName": false,
+    "enhance": true,
+    "packNpmRelationList": [],
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "useCompilerPlugins": false
+  },
+  "compileType": "game",
+  "simulatorPluginLibVersion": {},
+  "packOptions": {
+    "ignore": [
+      {"value": "other", "type": "folder"},
+      {"value": "data", "type": "folder"},
+      {"value": "tools", "type": "folder"},
+      {"value": "server", "type": "folder"}
+    ],
+    "include": []
+  },
+  "isGameTourist": false,
+  "appid": "wxfbd9793e54a5ef58",
+  "editorSetting": {}
+}

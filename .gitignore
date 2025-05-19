@@ -28,3 +28,4 @@ data
 temp
 *.grf
 package-lock.json
+other
