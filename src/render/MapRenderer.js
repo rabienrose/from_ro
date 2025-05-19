@@ -106,7 +106,7 @@ function onGroundComplete( data )
 
 	MapRenderer.water.mesh      = data.waterMesh;
 	MapRenderer.water.vertCount = data.waterVertCount;
-
+	console.log("onGroundComplete: ")
 	Ground.init( gl, data );
 	Water.init( gl, MapRenderer.water );
 

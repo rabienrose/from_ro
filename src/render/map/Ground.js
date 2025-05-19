@@ -283,6 +283,7 @@ function init( gl, data )
 	}
 	if (!_program) {
 		_program = WebGL.createShaderProgram( gl, _vertexShader, _fragmentShader );
+		console.log("_program: ", _program)
 	}
 
 	gl.bindBuffer( gl.ARRAY_BUFFER, _buffer );

@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "serve": "node server.js"
+    "serve": "node server.js",
+    "pub": "scp -r dist root@47.111.151.42:~/from_ro/"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

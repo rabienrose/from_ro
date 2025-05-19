@@ -5,7 +5,6 @@ import './App.css';
 import LoadingPage from "./components/LoadingPage.jsx";
 import FileManager from "./network/FileManager.js";
 
-
 function getCurrentTime() {
   const now = new Date();
   const min = now.getMinutes().toString().padStart(2, '0');
@@ -20,6 +19,11 @@ const App = () => {
   const [showRestart, setshowRestart] = useState(false);
   window.setshowRestart=setshowRestart
   useEffect(() => {
+    // FileManager.load("/maps/prt_fild06.gat")
+    // .then(data=>{
+    //   console.log(data);
+    // })
+    // ;
     console.log(`start at ${getCurrentTime()}`);
     import("./network/AutoNewUser.js").then(module => {
       console.log(`loaded at ${getCurrentTime()}`);

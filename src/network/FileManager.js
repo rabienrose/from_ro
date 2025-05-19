@@ -27,7 +27,7 @@ FileManager.send_debug_int= function(name, val){
 	fetch(FileManager.remoteClient+'/debug',{
 		method:'POST',
 		headers:{
-			'Content-Type':'application/json'
+			'Content-Type':'application/json',
 		},
 		body:JSON.stringify(info)
 	})
@@ -36,14 +36,19 @@ FileManager.get = function GetHTTP( filename )
 {
 	filename = filename.replace(/\\/g, '\/');
 	filename = Globals.convert_2_readable(filename);
+	filename = filename.toLowerCase();
 	var url = this.remoteClient + filename;
-	return fetch(url)
-		.then(response => {
-			if (!response.ok) {
-				console.log("%cfile not found: ", "color: red", filename	);
-			}
-			return response.arrayBuffer();
-		})
+	return fetch(url, {
+		headers: {
+			'Cache-Control': 'default'
+		}
+	})
+	.then(response => {
+		if (!response.ok) {
+			console.log("%cfile not found: ", "color: red", filename	);
+		}
+		return response.arrayBuffer();
+	})
 };
 
 FileManager.read = function Read( filename ){
