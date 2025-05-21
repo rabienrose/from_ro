@@ -8,10 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "serve": "node server.js",
+    "serve": "node server/server.js",
     "pub": "scp -r dist root@47.111.151.42:~/from_ro/"
   },
   "devDependencies": {
+    "@chicowall/grf-loader": "^1.0.4",
     "@eslint/js": "^9.22.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
@@ -24,12 +25,12 @@
     "globals": "^16.0.0",
     "mysql2": "^3.14.1",
     "terser-webpack-plugin": "^5.3.14",
-    "vite": "^6.3.1",
-    "@chicowall/grf-loader": "^1.0.4"
+    "vite": "^6.3.1"
   },
   "dependencies": {
     "gl-matrix": "^3.4.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "three": "^0.176.0"
   }
 }

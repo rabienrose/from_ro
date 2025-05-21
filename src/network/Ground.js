@@ -1,6 +1,7 @@
 import BinaryReader from '../utils/BinaryReader';
 import { calcNormal_v4 } from '../utils/glm_ex';
 import * as glMatrix from 'gl-matrix';
+import Global from "../utils/Globals.js";
 var vec3 = glMatrix.vec3;
 
 function GND( data )
@@ -88,6 +89,7 @@ GND.prototype.parseLightmaps = function parseLightmaps()
 	var per_cell_y = fp.getInt32();
 	var size_cell  = fp.getInt32();
 	var per_cell   = per_cell_x * per_cell_y * size_cell;
+	console.log(count, per_cell_x, per_cell_y, size_cell, per_cell);
 	this.lightmap = {
 		per_cell: per_cell,
 		count:    count,
@@ -192,6 +194,8 @@ GND.prototype.createLightmapImage = function createLightmapImage()
 			}
 		}
 	}
+
+
 	return out;
 };
 
@@ -216,6 +220,22 @@ GND.prototype.createTilesColorImage = function createTilesColorImage()
 			}
 		}
 	}
+
+	// if (typeof document !== "undefined") {
+	// 	var canvas = document.createElement('canvas');
+	// 	canvas.width = width;
+	// 	canvas.height = height;
+	// 	var ctx = canvas.getContext('2d');
+	// 	var imageData = ctx.createImageData(canvas.width, canvas.height);
+	// 	for (var i = 0; i < data.length; ++i) {
+	// 		imageData.data[i]=data[i];
+	// 	}
+	// 	ctx.putImageData(imageData, 0, 0);
+	// 	var link = document.createElement('a');
+	// 	link.download = 'lightmap.png';
+	// 	link.href = canvas.toDataURL();
+	// 	link.click();
+	// }
 	return data;
 };
 

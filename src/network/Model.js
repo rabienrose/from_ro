@@ -1,5 +1,5 @@
 import BinaryReader from '../utils/BinaryReader.js';
-import { calcNormal_v3, extractRotation_m4, toMat4_m3 } from '../utils/glm_ex.js';
+import { calcNormal_v3, extractRotation_m4, toMat4_m3, rotateQuat_m4} from '../utils/glm_ex.js';
 import * as glMatrix from 'gl-matrix';
 
 var vec3 = glMatrix.vec3;
@@ -131,12 +131,12 @@ RSM.prototype.load = function Load( data )
 	}
 	this.volumebox    = volumebox;
 	this.instances    = [];
+	this.inst_ids      = [];
 	this.box          = new RSM.Box();
 	this.calcBoundingBox();
 };
 
-RSM.prototype.createInstance = function CreateInstance( model, width, height )
-{
+RSM.prototype.getInstanceMatrix = function GetInstanceMatrix( model, width, height ){
 	var matrix = mat4.create();
 	mat4.identity( matrix );
 	mat4.translate( matrix, matrix, [ model.position[0] + width, model.position[1], model.position[2] + height ] );
@@ -150,7 +150,14 @@ RSM.prototype.createInstance = function CreateInstance( model, width, height )
 		mat4.translate(matrix, matrix, [0.0, this.box.range[1], 0.0]);
 		mat4.translate(matrix, matrix, this.box.offset);
 	}
+	return matrix;
+}
+
+RSM.prototype.createInstance = function CreateInstance( model, width, height, inst_id )
+{
+	var matrix = this.getInstanceMatrix( model, width, height );
 	this.instances.push(matrix);
+	this.inst_ids.push(inst_id);
 };
 
 RSM.prototype.calcBoundingBox = function CalcBoundingBox()
@@ -180,16 +187,23 @@ RSM.prototype.compile = function Compile()
 	var instances = this.instances;
 	var node_count     = nodes.length;
 	var instance_count = instances.length;
+	var inst_ids = [];
+	var node_ids = [];
 	var i, j, k;
 	var meshes = new Array(node_count * instance_count);
+	var inst_ids = new Array(node_count * instance_count);
 	for (i = 0, k = 0; i < node_count; ++i) {
 		for ( j = 0; j < instance_count; ++j, k++) {
 			meshes[k] = nodes[i].compile( instances[j] );
+			inst_ids[k] = this.inst_ids[j];
+			node_ids[k] = i;
 		}
 	}
 	return {
 		meshes:    meshes,
-		textures:  this.textures
+		textures:  this.textures,
+		inst_ids:  inst_ids,
+		node_ids:  node_ids
 	};
 };
 

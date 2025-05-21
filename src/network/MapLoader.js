@@ -82,6 +82,7 @@ MapLoader.load = function Load( mapname ){
 	})
 	.then(() => {
 		var models = world.models;
+
 		var i, count;
 		var files = [];
 		for (i = 0, count = models.length; i < count; ++i) {
@@ -95,57 +96,59 @@ MapLoader.load = function Load( mapname ){
 			.then(result=>{
 				return {
 					filename:filename,
-					result:result
+					result:result,
 				}
 			})
 		});
 		return Promise.all(promises).then((res) => {
 			var filenames=res.map(r=>r.filename);
-			var objects=res.map(r=>r.result);
+			var rsms=res.map(r=>r.result);
 			var i, count, pos;
 			for (i = 0, count = models.length; i < count; ++i) {
 				pos = filenames.indexOf(models[i].filename);
 				if (pos === -1) {
 					continue;
 				}
-				objects[pos].filename = filenames[pos];
-				objects[pos].createInstance(
+				rsms[pos].filename = filenames[pos];
+				rsms[pos].createInstance(
 					models[i],
 					ground.width,
-					ground.height
+					ground.height,
+					i
 				);
 			}
-			MapLoader.compileModels(objects);
+			MapLoader.compileModels(rsms);
 		});
 	});
 };
 
-MapLoader.compileModels = function CompileModels( objects )
+MapLoader.compileModels = function CompileModels( rsms )
 {
 	var i, j, count, size, bufferSize;
-	var object, nodes, meshes;
-	var index;
-	var progress = MapLoader.progress;
-	var models = [];
+	var rsm_c, inst_meshes, frag_meshes_in_inst;
+	var tex_id;
+	var frag_mesh_total = [];
 	bufferSize = 0;
 	
-	
-	for (i = 0, count = objects.length; i < count; ++i) {
-		object = objects[i].compile();
-		nodes  = object.meshes;
-		for (j = 0, size = nodes.length; j < size; ++j) {
-			meshes = nodes[j];
-			for (index in meshes) {
-				models.push({
-					texture: MapLoader.texture_root + object.textures[index],
-					alpha:   objects[i].alpha,
-					mesh:    meshes[index]
+	for (i = 0, count = rsms.length; i < count; ++i) {
+		rsm_c = rsms[i].compile();
+		inst_meshes  = rsm_c.meshes;
+		for (j = 0, size = inst_meshes.length; j < size; ++j) {
+			frag_meshes_in_inst = inst_meshes[j];
+			for (tex_id in frag_meshes_in_inst) {
+				frag_mesh_total.push({
+					texture: MapLoader.texture_root + rsm_c.textures[tex_id],
+					alpha:   rsms[i].alpha,
+					mesh:    frag_meshes_in_inst[tex_id],
+					inst_id:     rsm_c.inst_ids[j],
+					tex_id:     tex_id,
+					mesh_id:     rsm_c.node_ids[j]
 				});
-				bufferSize += meshes[index].length;
+				bufferSize += frag_meshes_in_inst[tex_id].length;
 			}
 		}
 	}
-	MapLoader.mergeMeshes( models, bufferSize);
+	MapLoader.mergeMeshes( frag_mesh_total, bufferSize, rsms);
 };
 
 function SortMeshByTextures( a, b )
@@ -169,33 +172,40 @@ function SortMeshByTextures( a, b )
 	return 0;
 }
 
-MapLoader.mergeMeshes = function MergeMeshes( objects, bufferSize )
-{
-	var i, j, count, size, offset;
-	var object, texture;
+MapLoader.mergeMeshes = function MergeMeshes( frag_mesh_total, bufferSize, rsms )
+{;
+	var i, j, count, mesh_size, offset;
+	var frag_mesh, texture;
 	var textures = [], infos = [];
 	var buffer;
 	var fcount = 1 / 9;
+	var raw_mapping={};
 	buffer = new Float32Array(bufferSize);
 	offset = 0;
-	objects.sort(SortMeshByTextures);
-	for (i = 0, j = 0, count = objects.length; i < count; ++i) {
-		object = objects[i];
-		size   = object.mesh.length;
-		if (texture === object.texture) {
-			infos[j-1].vertCount += size * fcount;
-		}
-		else {
-			texture = object.texture;
+	frag_mesh_total.sort(SortMeshByTextures);
+	for (i = 0, j = 0, count = frag_mesh_total.length; i < count; ++i) {
+		frag_mesh = frag_mesh_total[i];
+		mesh_size   = frag_mesh.mesh.length;
+		if (texture === frag_mesh.texture) {
+			infos[j-1].vertCount += mesh_size * fcount;
+		}else {
+			texture = frag_mesh.texture;
 			textures.push(texture);
 			infos[j++] = {
 				filename:   texture,
 				vertOffset: offset * fcount,
-				vertCount:  size   * fcount
+				vertCount:  mesh_size   * fcount,
 			};
 		}
-		buffer.set( object.mesh, offset );
-		offset += size;
+		var buf_seg=[offset * fcount, mesh_size * fcount, frag_mesh.tex_id, frag_mesh.mesh_id]
+		if (frag_mesh.inst_id in raw_mapping) {
+			raw_mapping[frag_mesh.inst_id].push(buf_seg);
+		}
+		else {
+			raw_mapping[frag_mesh.inst_id]=[buf_seg];
+		}
+		buffer.set( frag_mesh.mesh, offset );
+		offset += mesh_size;
 	}
 	var promises = textures.map(filename => {
 		var promise = FileManager.load(filename)
@@ -214,7 +224,7 @@ MapLoader.mergeMeshes = function MergeMeshes( objects, bufferSize )
 			pos = filenames.indexOf(infos[i].filename);
 			infos[i].texture = res[pos].result;
 		}
-		MapLoader.MAP_MODELS({buffer, infos});
+		MapLoader.MAP_MODELS({buffer, infos, raw_mapping, rsms});
 		MapLoader.MAP_COMPLETE();
 		
 	});

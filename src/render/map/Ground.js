@@ -38,7 +38,6 @@ var _vertexShader   = `
 	uniform mat3 uNormalMat;
 
 	void main(void) {
-		// gl_Position = vec4(aPosition.x*0.02, aPosition.z*0.02, 0.0, 1.0);
 		gl_Position     = uProjectionMat * uModelViewMat * vec4( aPosition, 1.0);
 		vTextureCoord   = aTextureCoord;
 		vLightmapCoord  = aLightmapCoord;
@@ -109,11 +108,13 @@ var _fragmentShader = `
 			float fogFactor = smoothstep( uFogNear, uFogFar, depth );
 			gl_FragColor    = mix( gl_FragColor, vec4( uFogColor, gl_FragColor.w ), fogFactor );
 		}
+		// gl_FragColor.rgb = vec3(1.0, 0.0, 0.0);
 	}
 `;
 
 function render( gl, modelView, projection, normalMat, fog, light )
 {
+	// console.log("render: ", modelView, projection, normalMat, fog, light);
 	var uniform = _program.uniform;
 	var attribute = _program.attribute;
 
@@ -169,7 +170,6 @@ function render( gl, modelView, projection, normalMat, fog, light )
 	gl.activeTexture( gl.TEXTURE2 );
 	gl.bindTexture( gl.TEXTURE_2D, _tileColor );
 	gl.uniform1i( uniform.uTileColor, 2 );
-
 	// Send mesh
 	gl.drawArrays(  gl.TRIANGLES, 0, _vertCount );
 
@@ -283,7 +283,6 @@ function init( gl, data )
 	}
 	if (!_program) {
 		_program = WebGL.createShaderProgram( gl, _vertexShader, _fragmentShader );
-		console.log("_program: ", _program)
 	}
 
 	gl.bindBuffer( gl.ARRAY_BUFFER, _buffer );

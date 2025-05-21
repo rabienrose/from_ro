@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import './App.css';
-import FileManager from "../src/network/FileManager.js";
+import MapEditor from "./core/MapEditor.js";
 
 function getCurrentTime() {
   const now = new Date();
@@ -14,14 +14,11 @@ const App = () => {
   const [showLoading,setShowLoading] = useState(false);
   const [progress,setProgress] = useState(0);
   useEffect(() => {
-    FileManager.load("/maps/prt_fild06.gat")
-    .then(data=>{
-      console.log(data);
-    });
+    MapEditor.init();
+    MapEditor.showMap("anthell01.rsw");
   }, []);
   return (
     <div id="app-container">
-      Hello World
     </div> 
   );
 };

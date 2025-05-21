@@ -174,7 +174,8 @@ RSW.prototype.compile = function Compile(){
 		water: this.water,
 		light: this.light,
 		sound: this.sounds,
-		effect: this.effects
+		effect: this.effects,
+		models: this.models	
 	};
 };
 

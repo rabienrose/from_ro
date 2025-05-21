@@ -13,7 +13,7 @@ function getContext( canvas, parameters )
 			preserveDrawingBuffer: true,
 		};
 	}
-	gl = canvas.getContext( 'webgl', parameters );
+	gl = canvas.getContext( 'webgl2', parameters );
 	if (!gl) {
 		throw new Error('WebGL::getContext() - Can\'t find a valid context, is WebGL supported ?');
 	}
