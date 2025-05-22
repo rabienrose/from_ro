@@ -20,12 +20,14 @@ Camera.init = function Init()
 	Camera.angle[0]      = -95;//240.0;
 	Camera.angle[1]      = 0;
 	Camera.position[0] = 100;
-	Camera.position[1] = 100;
-	Camera.position[2] =  0;
+	Camera.position[1] = 0;
+	Camera.position[2] =  100;
 	Camera.zoom      = 480;
 	RendererTool.canvas.addEventListener('mousedown', function(e) {
     btn_downs[e.button] = true;
-		Camera.onMouseDown(pointer);
+		if(e.button==0) {
+			Camera.onMouseDown(pointer);
+		}
   });
 
   RendererTool.canvas.addEventListener('mouseup', function(e) {
@@ -43,7 +45,7 @@ Camera.init = function Init()
       const dx = -e.movementX*panSpeed;
       const dy = e.movementY*panSpeed;
       Camera.position[0] += dx * Math.cos(yaw) - dy * Math.sin(yaw);
-      Camera.position[1] += dx * Math.sin(yaw) + dy * Math.cos(yaw);
+      Camera.position[2] += dx * Math.sin(yaw) + dy * Math.cos(yaw);
     }
 
     if (btn_downs[2]) {
@@ -75,8 +77,9 @@ var _position = vec3.create();
 Camera.update = function Update( tick )
 {
 	_position[0] = -Camera.position[0];
-	_position[1] = Camera.position[2] ;
-	_position[2] = -Camera.position[1];
+	_position[1] = Camera.position[1] ;
+	_position[2] = -Camera.position[2];
+	
 	Camera.angle[0]    %=   360;
 	Camera.angle[1]    %=   360;
 

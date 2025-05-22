@@ -18,6 +18,15 @@ function exist( filename )
 	return !!_memory[filename];
 }
 
+function clear(gl) {
+	for (var filename in _memory) {
+		if (_memory[filename]) {
+			remove( gl, filename );
+		}
+	}
+	_memory = {};
+}
+
 function set( filename, data )
 {
 	_memory[filename] = {
@@ -134,5 +143,6 @@ export default {
 	remove,
 	exist,
 	search,
+	clear,
 	_memory
 };

@@ -17,6 +17,10 @@ FileManager.remoteClient = 'http://'+Globals.root_ip+':8002';
 FileManager.filesAlias = {};
 var _onload_promise = {};
 
+FileManager.clear = function Clear(gl) {
+	Memory.clear(gl);
+	_onload_promise = {};
+}
 
 FileManager.send_debug_int= function(name, val){
 	let info = {

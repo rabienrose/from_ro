@@ -181,6 +181,17 @@ RSM.prototype.calcBoundingBox = function CalcBoundingBox()
 	}
 };
 
+RSM.prototype.compileOne = function CompileOne(inst_matrix)
+{
+	var nodes = this.nodes;
+	var node_count = nodes.length;
+	var meshes=new Array(node_count);
+	for (var i = 0; i < node_count; ++i) {
+		meshes[i] = nodes[i].compile( inst_matrix );
+	}
+	return meshes;
+}
+
 RSM.prototype.compile = function Compile()
 {
 	var nodes     = this.nodes;

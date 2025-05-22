@@ -2,6 +2,7 @@ import WebGL from '../../utils/WebGL.js';
 
 var _program = null;
 var _buffer = null;
+var _buffer_raw = null;
 var _objects = [];
 
 var _vertexShader   = `
@@ -80,7 +81,20 @@ var _fragmentShader = `
 	}
 `;
 
-function init( gl, data )
+var Models ={}
+
+Models.updateBuffer = function(gl) {
+	gl.bindBuffer( gl.ARRAY_BUFFER, _buffer );
+	gl.bufferData( gl.ARRAY_BUFFER, _buffer_raw, gl.STATIC_DRAW );
+}
+
+Models.setBuffer = function(data, offset) {
+	_buffer_raw.set(data, offset*9);
+	// gl.bindBuffer( gl.ARRAY_BUFFER, _buffer );
+	// gl.bufferData( gl.ARRAY_BUFFER, _buffer_raw, gl.STATIC_DRAW );
+}
+
+Models.init = function( gl, data )
 {
 	var i, count;
 	var objects;
@@ -96,6 +110,8 @@ function init( gl, data )
 	if (!_program) {
 		_program = WebGL.createShaderProgram( gl, _vertexShader, _fragmentShader );
 	}
+
+	_buffer_raw = data.buffer;
 
 	gl.bindBuffer( gl.ARRAY_BUFFER, _buffer );
 	gl.bufferData( gl.ARRAY_BUFFER, data.buffer, gl.STATIC_DRAW );
@@ -118,8 +134,11 @@ function init( gl, data )
 	}
 }
 
-function render( gl, modelView, projection, normalMat, fog, light )
+Models.render = function( gl, modelView, projection, normalMat, fog, light )
 {
+	if (!Models.b_show) {
+		return;
+	}
 	var uniform   = _program.uniform;
 	var attribute = _program.attribute;
 	var i, count;
@@ -174,7 +193,7 @@ function render( gl, modelView, projection, normalMat, fog, light )
 	gl.disableVertexAttribArray( attribute.aAlpha );
 }
 
-function free( gl )
+Models.free = function( gl )
 {
 	var i, count;
 
@@ -195,8 +214,6 @@ function free( gl )
 	_objects.length = 0;
 }
 
-export default {
-	init:   init,
-	render: render,
-	free:   free
-};
+Models.b_show=true;
+
+export default Models;

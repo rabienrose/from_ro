@@ -89,7 +89,6 @@ GND.prototype.parseLightmaps = function parseLightmaps()
 	var per_cell_y = fp.getInt32();
 	var size_cell  = fp.getInt32();
 	var per_cell   = per_cell_x * per_cell_y * size_cell;
-	console.log(count, per_cell_x, per_cell_y, size_cell, per_cell);
 	this.lightmap = {
 		per_cell: per_cell,
 		count:    count,
